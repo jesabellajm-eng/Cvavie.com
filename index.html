@@ -518,19 +518,34 @@
     <footer><div><a class="site-brand" href="#accueil" aria-label="CVavie.com"><span class="brand-cv">CV</span><span class="brand-avie">avie</span><span class="brand-tld">.com</span></a><p>Des CV professionnels, sans abonnement.</p></div><div><strong>PRODUIT</strong><a href="#fonctionnement">Fonctionnement</a><a href="#modeles">Modèles</a></div><div><strong>AIDE</strong><a href="#faq">FAQ</a><a href="#comparaison">Prix</a></div><div><strong>LÉGAL</strong><a href="#">Confidentialité</a><a href="#">Conditions</a></div><small>© 2026 CVavie.com. Tous droits réservés.</small></footer>
   </div>
 
+  <div id="chooserView" hidden>
+    <header class="app-header"><button class="back-home" id="chooserBack" type="button">← Accueil</button><a class="brand" href="#"><span class="brand-mark">CV</span><span class="brand-text"><span class="brand-cv">CV</span><span class="brand-avie">avie</span><span class="brand-tld">.com</span></span></a><div class="header-actions"><button class="client-link" id="chooserLoginBtn" type="button">Connexion / Accès client</button><div class="language-switch" aria-label="Langue / Language"><button class="lang-btn active" data-lang="fr" type="button">FR</button><button class="lang-btn" data-lang="en" type="button">EN</button></div><button class="btn btn-primary" id="chooserContinueTop" type="button">Continuer vers la rédaction →</button></div></header>
+    <main class="chooser-main">
+      <div class="chooser-head">
+        <p class="eyebrow">Étape 1 sur 2</p>
+        <h1>Choisissez votre modèle et votre couleur.</h1>
+        <p class="chooser-sub">Sélectionnez le style qui vous représente, puis votre couleur d’accent. Vous pourrez en changer à tout moment pendant la rédaction.</p>
+      </div>
+      <div class="chooser-palette-row">
+        <div class="chooser-palette-copy"><p class="eyebrow">Couleur d’accent</p><p>Elle s’applique instantanément à votre modèle.</p></div>
+        <div class="accent-palette chooser-palette" role="group" aria-label="Couleurs d’accent du CV"><button type="button" class="color-swatch" data-color="#07855f" style="--swatch:#07855f" aria-label="Vert émeraude"></button><button type="button" class="color-swatch active" data-color="#213f6d" style="--swatch:#213f6d" aria-label="Bleu marine"></button><button type="button" class="color-swatch" data-color="#34445a" style="--swatch:#34445a" aria-label="Bleu ardoise"></button><button type="button" class="color-swatch" data-color="#951b43" style="--swatch:#951b43" aria-label="Bordeaux"></button><button type="button" class="color-swatch" data-color="#168676" style="--swatch:#168676" aria-label="Sarcelle"></button><button type="button" class="color-swatch" data-color="#b46800" style="--swatch:#b46800" aria-label="Ocre"></button><button type="button" class="color-swatch" data-color="#6123b6" style="--swatch:#6123b6" aria-label="Violet"></button><button type="button" class="color-swatch" data-color="#10192d" style="--swatch:#10192d" aria-label="Bleu nuit"></button></div>
+      </div>
+      <div class="template-gallery reference-gallery chooser-gallery"></div>
+    </main>
+    <div class="chooser-bar">
+      <div class="chooser-bar-info"><small>Modèle sélectionné</small><strong id="chooserSelectedName">Quill</strong></div>
+      <button class="gold-btn" id="chooserContinue" type="button">Continuer vers la rédaction →</button>
+    </div>
+  </div>
+
   <div id="builderView" hidden>
     <header class="app-header"><button class="back-home" id="backHome" type="button">← Accueil</button><a class="brand" href="#"><span class="brand-mark">CV</span><span class="brand-text"><span class="brand-cv">CV</span><span class="brand-avie">avie</span><span class="brand-tld">.com</span></span></a><div class="header-actions"><button class="client-link" id="builderLoginBtn" type="button">Connexion / Accès client</button><div class="language-switch builder-language" aria-label="Langue / Language"><button class="lang-btn active" data-lang="fr" type="button">FR</button><button class="lang-btn" data-lang="en" type="button">EN</button></div><label class="template-control" for="templateSelect"><span>Modèle</span><select id="templateSelect"><option value="template-1">01 — Quill</option><option value="template-2">02 — Atlas</option><option value="template-3">03 — Meridian</option><option value="template-4">04 — Lumen</option><option value="template-5">05 — Harbor</option><option value="template-6">06 — Vector</option><option value="template-7">07 — Cadence</option><option value="template-8">08 — North</option></select></label><span class="save-status" id="saveStatus"><span class="status-dot"></span> Sauvegardé</span><button class="btn btn-primary" id="downloadBtn" type="button">Télécharger en PDF</button></div></header>
     <main class="workspace"><section class="editor-panel"><div class="editor-intro"><p class="eyebrow">Votre parcours</p><h1>Construisons votre CV.</h1><p>Remplissez les champs&nbsp;: l’aperçu se met à jour automatiquement.</p></div>
-      <section class="builder-templates" aria-labelledby="builderTemplatesTitle">
-        <div class="builder-templates-head"><div><p class="eyebrow">Styles disponibles</p><h2 id="builderTemplatesTitle">Choisissez parmi 8 modèles</h2></div><span>Changement instantané</span></div>
-        <div class="builder-template-grid"></div>
-      </section>
-      <section class="builder-colors" aria-labelledby="builderColorsTitle">
-        <div class="builder-colors-copy"><p class="eyebrow">Personnalisation</p><h2 id="builderColorsTitle">Choisissez une couleur d’accent</h2><p>La couleur s’applique instantanément au modèle sélectionné.</p></div>
-        <div class="accent-palette builder-palette" role="group" aria-label="Couleurs d’accent du CV">
-          <button type="button" class="color-swatch" data-color="#07855f" style="--swatch:#07855f" aria-label="Vert émeraude"></button><button type="button" class="color-swatch active" data-color="#213f6d" style="--swatch:#213f6d" aria-label="Bleu marine"></button><button type="button" class="color-swatch" data-color="#34445a" style="--swatch:#34445a" aria-label="Bleu ardoise"></button><button type="button" class="color-swatch" data-color="#951b43" style="--swatch:#951b43" aria-label="Bordeaux"></button><button type="button" class="color-swatch" data-color="#168676" style="--swatch:#168676" aria-label="Sarcelle"></button><button type="button" class="color-swatch" data-color="#b46800" style="--swatch:#b46800" aria-label="Ocre"></button><button type="button" class="color-swatch" data-color="#6123b6" style="--swatch:#6123b6" aria-label="Violet"></button><button type="button" class="color-swatch" data-color="#10192d" style="--swatch:#10192d" aria-label="Bleu nuit"></button>
-        </div>
-      </section>
+      <div class="builder-style-bar">
+        <div class="builder-style-info"><small>Style choisi</small><strong id="builderStyleName">Quill</strong></div>
+        <div class="accent-palette builder-palette" role="group" aria-label="Couleurs d’accent du CV"><button type="button" class="color-swatch" data-color="#07855f" style="--swatch:#07855f" aria-label="Vert émeraude"></button><button type="button" class="color-swatch active" data-color="#213f6d" style="--swatch:#213f6d" aria-label="Bleu marine"></button><button type="button" class="color-swatch" data-color="#34445a" style="--swatch:#34445a" aria-label="Bleu ardoise"></button><button type="button" class="color-swatch" data-color="#951b43" style="--swatch:#951b43" aria-label="Bordeaux"></button><button type="button" class="color-swatch" data-color="#168676" style="--swatch:#168676" aria-label="Sarcelle"></button><button type="button" class="color-swatch" data-color="#b46800" style="--swatch:#b46800" aria-label="Ocre"></button><button type="button" class="color-swatch" data-color="#6123b6" style="--swatch:#6123b6" aria-label="Violet"></button><button type="button" class="color-swatch" data-color="#10192d" style="--swatch:#10192d" aria-label="Bleu nuit"></button></div>
+        <button type="button" class="ghost-btn" id="changeStyleBtn">← Changer de style</button>
+      </div>
       <form id="resumeForm">
       <details class="form-section" open><summary><span class="section-number">01</span><span>Informations personnelles</span><span class="chevron">⌄</span></summary><div class="section-body form-grid"><label class="field full"><span>Nom complet</span><input id="fullName" name="fullName"></label><label class="field full"><span>Titre professionnel</span><input id="jobTitle" name="jobTitle"></label><label class="field"><span>Courriel</span><input id="email" name="email" type="email"></label><label class="field"><span>Téléphone</span><input id="phone" name="phone"></label><label class="field"><span>Ville</span><input id="location" name="location"></label><label class="field"><span>LinkedIn / Site</span><input id="website" name="website"></label></div></details>
       <details class="form-section" open><summary><span class="section-number">02</span><span>Profil / Sommaire</span><span class="chevron">⌄</span></summary><div class="section-body"><label class="field"><span>Résumé professionnel</span><textarea id="summary" name="summary" rows="5" maxlength="600" placeholder="Décrivez votre proposition de valeur, votre champ d'expertise et votre trajectoire…"></textarea><div class="field-actions"><button type="button" class="btn-ai-optimize" id="optimizeSummaryBtn" data-target="summary">🪄 Optimiser le texte par IA</button><small><span id="summaryCount">0</span>/600 caractères</small></div></label></div></details>
@@ -548,7 +563,8 @@
       <div class="modal-icon">↗</div>
       <p class="eyebrow">Exportation illimitée</p>
       <h2>Votre CV est prêt.</h2>
-      <p>Abonnement à vie requis <strong>(23,99&nbsp;$)</strong>. Vos modifications sont sauvegardées automatiquement.</p>
+      <p class="modal-wish">🍀 Bonne recherche d’emploi&nbsp;!</p>
+      <p>Accès à vie requis pour le téléchargement <strong>(23,99&nbsp;$, paiement unique)</strong>. Vos modifications sont sauvegardées automatiquement.</p>
       <div class="checkout-input-group">
         <label class="field full">
           <span>Courriel pour votre reçu et accès à vie</span>

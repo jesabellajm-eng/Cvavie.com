@@ -642,7 +642,11 @@ $('#clientLoginForm')?.addEventListener('submit', async e => {
  * Contrôle d'accès : vérifie userHasPaid avant d'autoriser l'export
  */
 $('#downloadBtn').addEventListener('click', () => {
-  if (!userHasPaid) return openPaymentModal();
+  if (!userHasPaid) {
+    showToast(currentLanguage === 'en' ? '🍀 Good luck with your job search!' : '🍀 Bonne recherche d’emploi !');
+    return openPaymentModal();
+  }
+  showToast(currentLanguage === 'en' ? '🍀 Good luck with your job search!' : '🍀 Bonne recherche d’emploi !');
   exportPDF();
 });
 
@@ -890,6 +894,7 @@ const FR_EN = {
   'Votre prochaine étape':'Your next step','Rédigez-le gratuitement.':'Write it for free.','Décidez à la fin.':'Decide at the end.','Créez votre CV sans inscription. Ne payez que lorsque vous êtes prêt à le télécharger.':'Build your resume without signing up. Pay only when you are ready to download.',
   'Commencer maintenant →':'Start now →','Un seul paiement.':'One payment.','Accès à vie.':'Lifetime access.','23,99 $ • aucun abonnement':'$23.99 • no subscription','Des CV professionnels, sans abonnement.':'Professional resumes, without subscriptions.',
   'PRODUIT':'PRODUCT','AIDE':'HELP','LÉGAL':'LEGAL','Confidentialité':'Privacy','Conditions':'Terms','Prix':'Pricing','Tous droits réservés.':'All rights reserved.',
+  'Étape 1 sur 2':'Step 1 of 2','Choisissez votre modèle et votre couleur.':'Choose your template and your colour.','Sélectionnez le style qui vous représente, puis votre couleur d’accent. Vous pourrez en changer à tout moment pendant la rédaction.':'Pick the style that represents you, then your accent colour. You can change it any time while writing.','Couleur d’accent':'Accent colour','Elle s’applique instantanément à votre modèle.':'It is applied to your template instantly.','Modèle sélectionné':'Selected template','Continuer vers la rédaction →':'Continue to writing →','Style choisi':'Chosen style','← Changer de style':'← Change style','🍀 Bonne recherche d’emploi !':'🍀 Good luck with your job search!','Accès à vie requis pour le téléchargement':'Lifetime access required to download','paiement unique':'one-time payment',
   '← Accueil':'← Home','Modèle':'Template','Personnalisation':'Customization','Choisissez une couleur d’accent':'Choose an accent colour','La couleur s’applique instantanément au modèle sélectionné.':'The colour is applied instantly to the selected template.','Styles disponibles':'Available styles','Choisissez parmi 8 modèles':'Choose from 8 templates','Changement instantané':'Instant switching','Héritage':'Heritage','Exécutif':'Executive','Forêt':'Forest','Corail':'Coral','Pur ATS':'Pure ATS','Essentiel':'Essential','Sauvegardé':'Saved','Sauvegarde…':'Saving…','Télécharger en PDF':'Download PDF','Votre parcours':'Your career','Construisons votre CV.':'Let’s build your resume.','Remplissez les champs : l’aperçu se met à jour automatiquement.':'Fill in the fields: the preview updates automatically.',
   'Informations personnelles':'Personal information','Profil':'Profile','Nom complet':'Full name','Titre professionnel':'Professional title','Courriel':'Email','Téléphone':'Phone','Ville':'City','LinkedIn / Site':'LinkedIn / Website','Profil / Sommaire':'Profile / Summary','Résumé professionnel':'Professional summary','caractères':'characters',
   'Expériences professionnelles':'Work experience','Ajouter une expérience':'Add experience','Éducation':'Education','Ajouter une formation':'Add education','Compétences':'Skills','Une compétence par ligne':'One skill per line','Langues':'Languages','Langue — Niveau, une par ligne':'Language — Level, one per line','Aperçu en direct':'Live preview','Format lettre':'Letter size',
@@ -1151,7 +1156,7 @@ function renderHomeGallery(lang = currentLanguage) {
   }).join('\n');
 
   gallery.querySelectorAll('.template-thumb').forEach(btn => {
-    btn.addEventListener('click', () => showBuilder(btn.dataset.template));
+    btn.addEventListener('click', () => showChooser(btn.dataset.template));
   });
 
   requestAnimationFrame(updateThumbScales);
@@ -1191,6 +1196,8 @@ function setLanguage(lang) {
   updateHeroResumeLanguage(lang);
   renderHomeGallery(lang);
   renderBuilderGallery(lang);
+  renderChooserGallery(lang);
+  updateStyleLabels();
   $$('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
   document.title = lang === 'en' ? 'CVavie.com | The first AI resume builder with lifetime access' : 'CVavie.com | Le premier créateur de CV par IA accessible à vie';
   const frTemplates = ['01 — Quill','02 — Atlas','03 — Meridian','04 — Lumen','05 — Harbor','06 — Vector','07 — Cadence','08 — North'];
@@ -1200,6 +1207,88 @@ function setLanguage(lang) {
 
 $$('.lang-btn').forEach(button => button.addEventListener('click', () => setLanguage(button.dataset.lang)));
 
+
+/*
+ * ============================================================================
+ * ÉTAPE 1 — PAGE DE CHOIX DU MODÈLE ET DE LA COULEUR D'ACCENT
+ * L'utilisateur choisit d'abord son style, puis passe à la page de rédaction
+ * (étape 2) où l'aperçu se met à jour en temps réel à droite.
+ * ============================================================================
+ */
+function templateName(id) {
+  const found = (window.TEMPLATES_DATA || []).find(t => t.id === id);
+  return found ? found.name : '';
+}
+
+function updateStyleLabels() {
+  const name = templateName(data.template);
+  const chooserName = $('#chooserSelectedName');
+  if (chooserName && name) chooserName.textContent = name;
+  const builderName = $('#builderStyleName');
+  if (builderName && name) builderName.textContent = name;
+  $$('.color-swatch').forEach(sw => sw.classList.toggle('active', sw.dataset.color === data.accentColor));
+  $$('.chooser-gallery .template-thumb').forEach(card => {
+    const active = card.dataset.template === data.template;
+    card.classList.toggle('active', active);
+    card.setAttribute('aria-pressed', active);
+  });
+  const select = $('#templateSelect');
+  if (select && select.value !== data.template) select.value = data.template;
+}
+
+function renderChooserGallery(lang = currentLanguage) {
+  const gallery = document.querySelector('.chooser-gallery');
+  if (!gallery || !window.TEMPLATES_DATA) return;
+  const isEn = (lang === 'en');
+  gallery.innerHTML = window.TEMPLATES_DATA.map(t => {
+    const selected = (t.id === data.template);
+    return [
+      '<button class="template-thumb' + (selected ? ' active' : '') + '" data-template="' + t.id + '" type="button" aria-pressed="' + selected + '">',
+      '  <span class="thumb-check">✓</span>',
+      '  <span class="thumb-frame">',
+      '    <span class="preview-scale">',
+      '      <span class="' + t.pageClass + '" style="' + t.pageStyle + '">',
+      '        ' + (isEn ? t.htmlEn : t.htmlFr),
+      '      </span>',
+      '    </span>',
+      '  </span>',
+      '  <figcaption>',
+      '    <strong>' + t.name + '</strong>',
+      '    <small>' + (isEn ? t.descEn : t.descFr) + '</small>',
+      '  </figcaption>',
+      '</button>'
+    ].join('\n');
+  }).join('\n');
+
+  gallery.querySelectorAll('.template-thumb').forEach(btn => {
+    btn.addEventListener('click', () => {
+      data.template = btn.dataset.template;
+      renderPreview();
+      scheduleSave();
+      updateStyleLabels();
+    });
+  });
+
+  requestAnimationFrame(updateThumbScales);
+}
+
+function showChooser(selectedTemplate) {
+  if (selectedTemplate) {
+    data.template = selectedTemplate;
+    renderPreview();
+    scheduleSave();
+  }
+  $('#landingView').hidden = true;
+  $('#builderView').hidden = true;
+  const chooser = $('#chooserView');
+  if (chooser) chooser.hidden = false;
+  document.body.classList.remove('builder-open');
+  document.body.classList.add('chooser-open');
+  updateStyleLabels();
+  window.scrollTo(0, 0);
+  requestAnimationFrame(updateThumbScales);
+}
+
 function showBuilder(selectedTemplate) {
   if (selectedTemplate) {
     data.template = selectedTemplate;
@@ -1208,27 +1297,40 @@ function showBuilder(selectedTemplate) {
     scheduleSave();
   }
   $('#landingView').hidden = true;
+  const chooserView = $('#chooserView');
+  if (chooserView) chooserView.hidden = true;
+  document.body.classList.remove('chooser-open');
   $('#builderView').hidden = false;
   document.body.classList.add('builder-open');
+  updateStyleLabels();
   window.scrollTo(0, 0);
   requestAnimationFrame(() => { setZoom(zoom); updateThumbScales(); });
 }
 
 function showLanding() {
   $('#builderView').hidden = true;
+  const chooser = $('#chooserView');
+  if (chooser) chooser.hidden = true;
+  document.body.classList.remove('chooser-open');
   $('#landingView').hidden = false;
   document.body.classList.remove('builder-open');
   window.scrollTo(0, 0);
   requestAnimationFrame(updateThumbScales);
 }
 
-$$('.open-builder').forEach(button => button.addEventListener('click', () => showBuilder(button.dataset.template)));
+$$('.open-builder').forEach(button => button.addEventListener('click', () => showChooser(button.dataset.template)));
 $('#backHome').addEventListener('click', showLanding);
+$('#chooserBack')?.addEventListener('click', showLanding);
+$('#chooserContinue')?.addEventListener('click', () => showBuilder(data.template));
+$('#chooserContinueTop')?.addEventListener('click', () => showBuilder(data.template));
+$('#changeStyleBtn')?.addEventListener('click', () => showChooser());
 
 populateForm();
 setLanguage(currentLanguage);
 renderHomeGallery(currentLanguage);
 renderBuilderGallery(currentLanguage);
+renderChooserGallery(currentLanguage);
+updateStyleLabels();
 requestAnimationFrame(() => { updateHeroResumeScale(); updateThumbScales(); });
 window.addEventListener('load', updateHeroResumeScale);
 
@@ -1240,5 +1342,6 @@ function handleGlobalSwatchClick(e) {
   data.accentColor = swatch.dataset.color;
   renderPreview();
   scheduleSave();
+  if (typeof updateStyleLabels === 'function') updateStyleLabels();
 }
 document.addEventListener('click', handleGlobalSwatchClick);
