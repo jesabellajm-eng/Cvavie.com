@@ -1334,6 +1334,22 @@ updateStyleLabels();
 requestAnimationFrame(() => { updateHeroResumeScale(); updateThumbScales(); });
 window.addEventListener('load', updateHeroResumeScale);
 
+/*
+ * RETOUR DE STRIPE APRÈS PAIEMENT (?paid=true)
+ * Le client revient sur cvavie.com : on rouvre directement son CV (conservé
+ * localement), on le remercie et on lance automatiquement le téléchargement PDF.
+ */
+if (urlParams.get('paid') === 'true') {
+  history.replaceState({}, '', window.location.pathname);
+  showBuilder(data.template);
+  setTimeout(() => {
+    showToast(currentLanguage === 'en'
+      ? '✓ Payment confirmed — lifetime access unlocked. 🍀 Good luck with your job search!'
+      : '✓ Paiement confirmé — accès à vie débloqué. 🍀 Bonne recherche d’emploi !');
+  }, 400);
+  setTimeout(() => { if (userHasPaid) exportPDF(); }, 2200);
+}
+
 
 
 function handleGlobalSwatchClick(e) {
