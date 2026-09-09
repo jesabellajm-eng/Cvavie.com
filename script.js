@@ -145,51 +145,261 @@ function renderRepeaters() {
 function setText(id, value, fallback = '') { $(id).textContent = value.trim() || fallback; }
 function lines(value) { return value.split('\n').map(v => v.trim()).filter(Boolean); }
 
+function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLanguage) {
+  const isEn = (lang === 'en');
+  const accent = accentColor || '#213f6d';
+  
+  const name = escapeHTML(cvData.fullName || (isEn ? 'Your Name' : 'Votre nom'));
+  const title = escapeHTML(cvData.jobTitle || (isEn ? 'Professional Title' : 'Titre professionnel'));
+  const summary = escapeHTML(cvData.summary || '');
+  
+  const contacts = [cvData.email, cvData.phone, cvData.location, cvData.website].filter(v => v && v.trim()).map(escapeHTML);
+  const contactText = contacts.join('  ·  ');
+  
+  const experiences = cvData.experiences || [];
+  const education = cvData.education || [];
+  const skills = (cvData.skills || '').split('\n').map(s => s.trim().replace(/^[-•*–—]\s*/, '')).filter(Boolean);
+  const languages = (cvData.languages || '').split('\n').map(s => s.trim().replace(/^[-•*–—]\s*/, '')).filter(Boolean);
+
+  const labels = {
+    summary: isEn ? 'Profile' : 'Profil',
+    experience: isEn ? 'Experience' : 'Expérience',
+    education: isEn ? 'Education' : 'Formation',
+    skills: isEn ? 'Skills' : 'Compétences',
+    languages: isEn ? 'Languages' : 'Langues',
+    contact: isEn ? 'Contact' : 'Contact'
+  };
+
+  function renderExpItems() {
+    if (!experiences.length) return '';
+    return experiences.map(item => {
+      const role = escapeHTML(item.role || (isEn ? 'Role' : 'Poste'));
+      const company = item.company ? ' — ' + escapeHTML(item.company) : '';
+      const dates = escapeHTML([item.start, item.end].filter(Boolean).join(' — '));
+      const loc = item.location ? escapeHTML(item.location) : '';
+      const bullets = (item.description || '').split('\n').map(l => l.trim().replace(/^[-•*–—]\s*/, '')).filter(Boolean);
+      
+      let bulletsHtml = '';
+      if (bullets.length > 1 || (bullets.length === 1 && item.description.includes('•'))) {
+        bulletsHtml = '<ul style="margin: 4px 0 0; padding-left: 14px; list-style: disc;">' + bullets.map(b => '<li style="margin-bottom: 2.5px; line-height: 1.5;">' + escapeHTML(b) + '</li>').join('') + '</ul>';
+      } else if (item.description) {
+        bulletsHtml = '<p style="margin: 3px 0 0; color: #374151; line-height: 1.55;">' + escapeHTML(item.description) + '</p>';
+      }
+
+      return '<div style="margin-bottom: 12px;">' +
+        '<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">' +
+          '<div style="font-weight: 700; color: #111827; font-size: 11px;">' + role + '<span style="font-weight: 400; color: #4b5563;">' + company + '</span></div>' +
+          '<div style="white-space: nowrap; color: #6b7280; font-size: 9.6px;">' + dates + '</div>' +
+        '</div>' +
+        (loc ? '<div style="color: #6b7280; font-size: 9.6px; margin-top: 1px;">' + loc + '</div>' : '') +
+        bulletsHtml +
+      '</div>';
+    }).join('');
+  }
+
+  function renderEduItems() {
+    if (!education.length) return '';
+    return education.map(item => {
+      const degree = escapeHTML(item.degree || (isEn ? 'Degree' : 'Diplôme'));
+      const school = item.school ? escapeHTML(item.school) : '';
+      const dates = escapeHTML([item.start, item.end].filter(Boolean).join(' — '));
+      const desc = item.description ? '<div style="color: #4b5563; margin-top: 2px;">' + escapeHTML(item.description) + '</div>' : '';
+
+      return '<div style="margin-bottom: 9px;">' +
+        '<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">' +
+          '<div style="font-weight: 700; color: #111827; font-size: 11px;">' + degree + '</div>' +
+          '<div style="white-space: nowrap; color: #6b7280; font-size: 9.6px;">' + dates + '</div>' +
+        '</div>' +
+        (school ? '<div style="color: #4b5563;">' + school + '</div>' : '') +
+        desc +
+      '</div>';
+    }).join('');
+  }
+
+  function renderSkillsList(bulletChar = ' · ') {
+    if (!skills.length) return '';
+    return '<div style="display: flex; flex-wrap: wrap; gap: 4px 6px;">' +
+      skills.map((s, idx) => '<span>' + escapeHTML(s) + (idx < skills.length - 1 ? '<span style="color: #9ca3af;">' + bulletChar + '</span>' : '') + '</span>').join('') +
+    '</div>';
+  }
+
+  function renderLanguagesList() {
+    if (!languages.length) return '';
+    return '<div style="display: flex; flex-wrap: wrap; gap: 4px 18px;">' +
+      languages.map(l => {
+        const parts = l.split(/[—–-]/);
+        if (parts.length > 1) {
+          return '<div><span style="font-weight: 600;">' + escapeHTML(parts[0].trim()) + '</span><span style="color: #6b7280;"> — ' + escapeHTML(parts.slice(1).join('—').trim()) + '</span></div>';
+        }
+        return '<div><span style="font-weight: 600;">' + escapeHTML(l) + '</span></div>';
+      }).join('') +
+    '</div>';
+  }
+
+  // 1. TEMPLATE-2 (Atlas)
+  if (templateId === 'template-2') {
+    return '<div class="resume-sheet" style="font-family: \'Source Serif 4\', Georgia, Cambria, serif; font-size: 10.6px; line-height: 1.55; padding: 16mm 18mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="text-align: center; border-bottom: 2px solid ' + accent + '; padding-bottom: 9px; margin-bottom: 14px;">' +
+        '<div style="font-size: 27px; font-weight: 700; color: #111827;">' + name + '</div>' +
+        '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + title + '</div>' +
+        (contactText ? '<div style="font-size: 9.6px; color: #4b5563; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
+      '</div>' +
+      (summary ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+    '</div>';
+  }
+
+  // 2. TEMPLATE-3 (Meridian)
+  if (templateId === 'template-3') {
+    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.6px; line-height: 1.55; padding: 15mm 17mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="text-align: left; border-bottom: 2px solid ' + accent + '; padding-bottom: 9px; margin-bottom: 14px;">' +
+        '<div style="font-size: 26px; font-weight: 700; color: #111827;">' + name + '</div>' +
+        '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + title + '</div>' +
+        (contactText ? '<div style="font-size: 9.6px; color: #4b5563; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
+      '</div>' +
+      (summary ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+    '</div>';
+  }
+
+  // 3. TEMPLATE-4 (Lumen)
+  if (templateId === 'template-4') {
+    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 11px; line-height: 1.55; padding: 20mm 22mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="text-align: left; padding-bottom: 4px; margin-bottom: 16px;">' +
+        '<div style="font-size: 27px; font-weight: 700; color: #111827; letter-spacing: -0.01em;">' + name + '</div>' +
+        '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em;">' + title + '</div>' +
+        (contactText ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
+      '</div>' +
+      (summary ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #374151;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+    '</div>';
+  }
+
+  // 4. TEMPLATE-1 (Quill)
+  if (templateId === 'template-1') {
+    return '<div class="resume-sheet" style="font-family: \'Source Serif 4\', Georgia, Cambria, serif; font-size: 10.6px; line-height: 1.55; padding: 18mm 20mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="text-align: center; padding-bottom: 4px; margin-bottom: 14px;">' +
+        '<div style="font-size: 28px; font-weight: 700; color: #111827; letter-spacing: -0.01em;">' + name + '</div>' +
+        '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 3px; font-style: italic;">' + title + '</div>' +
+        (contactText ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
+      '</div>' +
+      (summary ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+    '</div>';
+  }
+
+  // 5. TEMPLATE-6 (Vector)
+  if (templateId === 'template-6') {
+    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.6px; line-height: 1.55; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="background: ' + accent + '; color: #ffffff; padding: 13mm 16mm 9mm;">' +
+        '<div style="font-size: 28px; font-weight: 700; letter-spacing: -0.01em;">' + name + '</div>' +
+        '<div style="font-size: 12px; color: rgba(255, 255, 255, 0.9); font-weight: 500; margin-top: 2px;">' + title + '</div>' +
+        (contactText ? '<div style="font-size: 9.6px; color: rgba(255, 255, 255, 0.85); margin-top: 8px;"><span>' + contactText + '</span></div>' : '') +
+      '</div>' +
+      '<div style="padding: 10mm 16mm 14mm;">' +
+        (summary ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+        (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+        (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+        (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+        (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  // 6. TEMPLATE-7 (Cadence)
+  if (templateId === 'template-7') {
+    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.2px; line-height: 1.4; padding: 12mm 14mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="border-left: 4px solid ' + accent + '; padding-left: 10px; margin-bottom: 12px;">' +
+        '<div style="font-size: 24px; font-weight: 700; color: #111827;">' + name + '</div>' +
+        '<div style="font-size: 11px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + title + '</div>' +
+        (contactText ? '<div style="font-size: 9.3px; color: #6b7280; margin-top: 4px;"><span>' + contactText + '</span></div>' : '') +
+      '</div>' +
+      (summary ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+    '</div>';
+  }
+
+  // 7. TEMPLATE-5 (Harbor — 2 colonnes)
+  if (templateId === 'template-5') {
+    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.6px; line-height: 1.55; display: flex; flex-direction: row; width: 794px; min-height: 1123px; background: #ffffff; box-sizing: border-box;">' +
+      '<aside style="width: 235px; min-width: 235px; background: color-mix(in srgb, ' + accent + ' 6%, #f8fafc); border-right: 1px solid color-mix(in srgb, ' + accent + ' 16%, #e2e8f0); padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">' +
+        '<div>' +
+          '<div style="font-size: 21px; font-weight: 700; color: #111827; line-height: 1.2;">' + name + '</div>' +
+          '<div style="font-size: 11px; color: ' + accent + '; font-weight: 600; margin-top: 4px;">' + title + '</div>' +
+        '</div>' +
+        (contacts.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.contact + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px; color: #4b5563;">' + contacts.map(c => '<div>' + c + '</div>').join('') + '</div></section>' : '') +
+        (skills.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px;">' + skills.map(s => '<div>• ' + escapeHTML(s) + '</div>').join('') + '</div></section>' : '') +
+        (languages.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px;">' + languages.map(l => '<div>' + escapeHTML(l) + '</div>').join('') + '</div></section>' : '') +
+      '</aside>' +
+      '<div style="flex: 1 1 0%; padding: 26px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">' +
+        (summary ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #374151;">' + summary + '</p></section>' : '') +
+        (experiences.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+        (education.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  // 8. TEMPLATE-8 (North)
+  return '<div class="resume-sheet" style="font-family: \'Source Serif 4\', Georgia, Cambria, serif; font-size: 11px; line-height: 1.55; padding: 22mm 24mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+    '<div style="text-align: left; padding-bottom: 4px; margin-bottom: 16px;">' +
+      '<div style="font-size: 29px; font-weight: 700; color: #111827; letter-spacing: -0.01em;">' + name + '</div>' +
+      '<div style="font-size: 12px; color: ' + accent + '; font-weight: 600; margin-top: 3px;">' + title + '</div>' +
+      (contactText ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
+    '</div>' +
+    (summary ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+    (experiences.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+    (education.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+    (skills.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+    (languages.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+  '</div>';
+}
+
 function renderPreview() {
-  setText('#previewName', data.fullName, 'Votre nom');
-  setText('#previewTitle', data.jobTitle, 'Votre titre professionnel');
-  setText('#previewSummary', data.summary);
-  $('#summarySection').hidden = !data.summary.trim();
-
-  const contacts = [data.email, data.phone, data.location, data.website].filter(v => v?.trim());
-  $('#previewContact').innerHTML = contacts.map(v => `<span>${escapeHTML(v)}</span>`).join('');
-
-  $('#previewExperiences').innerHTML = data.experiences.map(item => `<article class="resume-item">
-    <div class="item-heading"><span class="item-title"><strong>${escapeHTML(item.role || 'Poste')}</strong>${item.company ? ` <span class="item-company">— ${escapeHTML(item.company)}</span>` : ''}</span><span class="item-date">${escapeHTML([item.start,item.end].filter(Boolean).join(' — '))}</span></div>
-    ${item.location ? `<p class="item-location">${escapeHTML(item.location)}</p>` : ''}<p class="item-description">${escapeHTML(item.description)}</p></article>`).join('');
-  $('#experienceSection').hidden = !data.experiences.length;
-
-  $('#previewEducation').innerHTML = data.education.map(item => `<article class="resume-item">
-    <div class="item-heading"><strong>${escapeHTML(item.degree || 'Diplôme')}</strong><span class="item-date">${escapeHTML([item.start,item.end].filter(Boolean).join(' — '))}</span></div>
-    <p class="item-subtitle">${escapeHTML(item.school)}</p><p class="item-description">${escapeHTML(item.description)}</p></article>`).join('');
-  $('#educationSection').hidden = !data.education.length;
-
-  const skillItems = lines(data.skills);
-  $('#previewSkills').innerHTML = skillItems.map(v => `<li>${escapeHTML(v)}</li>`).join('');
-  $('#skillsSection').hidden = !skillItems.length;
-  const languageItems = lines(data.languages);
-  $('#previewLanguages').innerHTML = languageItems.map(v => `<li>${escapeHTML(v)}</li>`).join('');
-  $('#languagesSection').hidden = !languageItems.length;
-  if ($('#summaryCount')) $('#summaryCount').textContent = data.summary.length;
-
   const preview = $('#resumePreview');
-  preview.className = `resume ${data.template}`;
-  preview.style.setProperty('--user-accent', data.accentColor || '#213f6d');
-  document.documentElement.style.setProperty('--hero-accent', data.accentColor || '#213f6d');
-  $('.templates')?.style.setProperty('--gallery-accent', data.accentColor || '#213f6d');
-  $('.builder-templates')?.style.setProperty('--gallery-accent', data.accentColor || '#213f6d');
+  if (!preview) return;
+
+  const currentTemplate = data.template || 'template-2';
+  const currentAccent = data.accentColor || '#213f6d';
+
+  // Render complete HTML for the selected template
+  preview.innerHTML = renderCVSheetHTML(currentTemplate, data, currentAccent, currentLanguage);
+  preview.className = 'resume ' + currentTemplate;
+  preview.style.setProperty('--user-accent', currentAccent);
+  document.documentElement.style.setProperty('--hero-accent', currentAccent);
+
+  // Sync controls
+  const select = $('#templateSelect');
+  if (select) select.value = currentTemplate;
+
   $$('.color-swatch').forEach(swatch => {
-    const selected = swatch.dataset.color.toLowerCase() === (data.accentColor || '#213f6d').toLowerCase();
+    const selected = swatch.dataset.color.toLowerCase() === currentAccent.toLowerCase();
     swatch.classList.toggle('active', selected);
     swatch.setAttribute('aria-pressed', String(selected));
   });
-  $$('.builder-template-card').forEach(card => {
-    const selected = card.dataset.builderTemplate === data.template;
-    card.classList.toggle('active', selected);
-    card.setAttribute('aria-pressed', String(selected));
-  });
-}
 
+  $$('.builder-template-btn').forEach(btn => {
+    const selected = btn.dataset.builderTemplate === currentTemplate;
+    btn.classList.toggle('active', selected);
+    btn.setAttribute('aria-pressed', String(selected));
+  });
+
+  if ($('#summaryCount')) $('#summaryCount').textContent = (data.summary || '').length;
+}
 function populateForm() {
   ['fullName','jobTitle','email','phone','location','website','summary','skills','languages'].forEach(key => {
     const field = $('#' + key); if (field) field.value = data[key] || '';
@@ -954,32 +1164,23 @@ function renderBuilderGallery(lang = currentLanguage) {
   grid.innerHTML = window.TEMPLATES_DATA.map(t => {
     const selected = (t.id === data.template);
     return [
-      '<button class="builder-template-card' + (selected ? ' active' : '') + '" data-builder-template="' + t.id + '" type="button" aria-pressed="' + selected + '">',
-      '  <span class="thumb-frame">',
-      '    <span class="preview-scale">',
-      '      <span class="' + t.pageClass + '" style="' + t.pageStyle + '">',
-      '        ' + (isEn ? t.htmlEn : t.htmlFr),
-      '      </span>',
-      '    </span>',
-      '  </span>',
+      '<button class="builder-template-btn' + (selected ? ' active' : '') + '" data-builder-template="' + t.id + '" type="button" aria-pressed="' + selected + '">',
       '  <strong>' + t.name + '</strong>',
       '  <small>' + (isEn ? t.descEn : t.descFr) + '</small>',
       '</button>'
     ].join('\n');
   }).join('\n');
 
-  grid.querySelectorAll('.builder-template-card').forEach(card => {
+  grid.querySelectorAll('.builder-template-btn').forEach(card => {
     card.addEventListener('click', () => {
       data.template = card.dataset.builderTemplate;
-      $('#templateSelect').value = data.template;
+      const select = $('#templateSelect');
+      if (select) select.value = data.template;
       renderPreview();
       scheduleSave();
     });
   });
-
-  requestAnimationFrame(updateThumbScales);
 }
-
 window.addEventListener('resize', () => { updateHeroResumeScale(); updateThumbScales(); });
 
 function setLanguage(lang) {
