@@ -1,0 +1,11 @@
+{
+  "name": "cvavie",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CVavie.com — créateur de CV bilingue FR/EN, compatible ATS, paiement unique à vie.",
+  "dependencies": {
+    "@sparticuz/chromium": "^127.0.0",
+    "puppeteer-core": "^22.15.0"
+  }
+}

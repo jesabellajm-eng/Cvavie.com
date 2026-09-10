@@ -652,16 +652,52 @@ $('#downloadBtn').addEventListener('click', () => {
 
 /*
  * EXPORT PDF TEXTE RÉEL (100 % compatible ATS)
- * Ouvre une fenêtre d'impression dédiée contenant le CV en HTML texte.
- * L'utilisateur choisit « Enregistrer en PDF » : le texte reste sélectionnable
- * et lisible par les logiciels de tri (ATS), contrairement à un PDF-image.
+ * Le HTML du CV rendu est envoyé à la route serverless /api/export-pdf qui
+ * l'imprime en vrai texte via Chromium côté serveur : téléchargement direct,
+ * texte sélectionnable et lisible par les logiciels de tri (ATS).
+ * Repli automatique : fenêtre d'impression navigateur si le serveur échoue.
  */
-function exportPDF() {
-  const sheet = document.querySelector('#resumePreview .resume-sheet');
+async function exportPDF() {
+  const sheet = document.querySelector('#resumePreview .resume-sheet, #resumePreview .resume-page, #resumePreview .resume');
   const isEn = currentLanguage === 'en';
   if (!sheet) return showToast(isEn ? 'Nothing to export yet.' : 'Rien à exporter pour le moment.');
 
   const filename = `${(data.fullName || 'mon-cv').trim().replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '-').replace(/^-|-$/g, '')}-CV`;
+  const downloadBtn = $('#downloadBtn');
+
+  showToast(isEn ? '⏳ Génération de votre PDF…' : '⏳ Génération de votre PDF…');
+  if (downloadBtn) downloadBtn.disabled = true;
+
+  try {
+    const response = await fetch('/api/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ html: sheet.outerHTML, filename, lang: currentLanguage })
+    });
+
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+    showToast(isEn ? '✓ PDF téléchargé — bonne chance !' : '✓ PDF téléchargé — bonne chance !');
+  } catch (err) {
+    console.error('Export serveur indisponible, repli impression navigateur:', err);
+    exportPDFViaPrintWindow(sheet, filename, isEn);
+  } finally {
+    if (downloadBtn) downloadBtn.disabled = false;
+  }
+}
+
+/* Repli local : fenêtre d'impression (vrai texte, mais boîte d'impression visible) */
+function exportPDFViaPrintWindow(sheet, filename, isEn) {
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
     return showToast(isEn
@@ -672,6 +708,8 @@ function exportPDF() {
   const doc = [
     '<!DOCTYPE html><html lang="' + currentLanguage + '"><head><meta charset="utf-8">',
     '<title>' + filename + '</title>',
+    '<link rel="stylesheet" href="/style.css">',
+    '<link rel="stylesheet" href="/restyle-v2.css">',
     '<link rel="preconnect" href="https://fonts.googleapis.com">',
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
     '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">',
@@ -679,7 +717,7 @@ function exportPDF() {
     '@page{size:letter;margin:0}',
     '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}',
     'html,body{margin:0;padding:0;background:#fff}',
-    '.resume-sheet{width:8.5in!important;min-height:11in!important;margin:0 auto!important;box-shadow:none!important}',
+    '.resume-sheet,.resume-page{width:8.5in!important;min-height:11in!important;margin:0 auto!important;box-shadow:none!important;transform:none!important}',
     '</style></head><body>',
     sheet.outerHTML,
     '<scr' + 'ipt>window.addEventListener("load",function(){setTimeout(function(){window.print()},450)})</scr' + 'ipt>',
