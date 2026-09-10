@@ -4350,3 +4350,40 @@ footer .site-brand .brand-tld{color:#7C8598!important}
   background:#D9CEFF!important;transform:translateY(-2px)!important;
   box-shadow:0 22px 48px rgba(196,181,253,.5)!important;
 }
+
+/* ============================================================
+   TOUCHES DE VERT — accent menthe/turquoise (validation, gains)
+   ============================================================ */
+:root{
+  --mint:#34D399;
+  --mint-bright:#5EEAD4;
+  --mint-deep:#0D3B33;
+}
+
+/* Coches ✓ des listes d'arguments (IA, ATS, paiement unique) */
+#landingView .ai-perks-list .check,
+#landingView .ai-perks-list li .check{color:var(--mint-bright)!important}
+#landingView .why-choose-section li,
+#landingView .why-choose-section ul li::marker{color:#94A3B8}
+#landingView .why-choose-section ul li{position:relative}
+#landingView .why-choose-section ul li::first-letter{color:var(--mint-bright)}
+
+/* Étiquette « Version optimisée par l'IA » : vert = après/réussite */
+#landingView .tag-after{
+  background:rgba(52,211,153,.12)!important;color:var(--mint-bright)!important;
+  border:1px solid rgba(52,211,153,.45)!important;
+}
+#landingView .sample-after{border-color:rgba(52,211,153,.35)!important}
+
+/* Badges « Achat vérifié • Accès à vie » des témoignages */
+#landingView .testimonial-badge{
+  color:var(--mint-bright)!important;background:rgba(52,211,153,.1)!important;
+  border:1px solid rgba(52,211,153,.35)!important;
+}
+
+/* Icônes des cartes « Tout est inclus » : dégradé mauve→vert discret */
+#landingView .features .card-grid article b{color:var(--mint-bright)!important}
+
+/* Chiffres et montants d'économie en vert (déjà turquoise Semrush, renforcé) */
+#landingView .price-table .price-row strong:first-of-type{color:var(--mint-bright)!important}
+#landingView .comparison strong{color:inherit}
