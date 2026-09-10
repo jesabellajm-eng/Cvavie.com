@@ -4433,3 +4433,46 @@ footer .site-brand .brand-tld{color:#7C8598!important}
 @media (max-width:900px){
   .pc-check,.pc-cross{width:19px;height:19px;font-size:10.5px;margin-right:7px}
 }
+
+/* --- Comparatif XXL : texte proportionné aux grands blocs (pub Google) --- */
+#landingView .comparison h2{font-size:clamp(54px,6.4vw,92px)!important;letter-spacing:-.032em!important}
+#landingView .comparison-copy>p:last-child{font-size:20px!important;line-height:1.6!important;max-width:34ch}
+#landingView .comparison .kicker{font-size:15px!important;letter-spacing:.24em!important}
+#landingView .price-row>*{font-size:20px!important;padding:22px 28px!important}
+#landingView .price-row.header strong{font-size:18.5px!important;letter-spacing:.02em;padding:20px 28px!important}
+#landingView .price-row span{font-size:19.5px!important}
+#landingView .price-row strong{font-size:25px!important;font-weight:800!important}
+#landingView .price-row em{font-size:21px!important}
+#landingView .price-row .pc-check,#landingView .price-row .pc-cross{font-size:24px!important;width:32px!important;height:32px!important;line-height:32px!important}
+#landingView .saving-note{font-size:18.5px!important;padding:22px 28px!important}
+#landingView .saving-note b{font-size:22px!important}
+.stat-main strong{font-size:clamp(96px,11vw,164px)!important;line-height:.95!important}
+.stat-main span{font-size:22px!important;line-height:1.45!important;max-width:26ch}
+.stat-accent svg{width:52px!important;height:52px!important}
+@media (max-width:900px){
+  #landingView .comparison h2{font-size:clamp(38px,9vw,54px)!important}
+  #landingView .price-row>*{font-size:17px!important;padding:16px 18px!important}
+  #landingView .price-row strong{font-size:20px!important}
+  #landingView .price-row em{font-size:17.5px!important}
+  #landingView .price-row span{font-size:16.5px!important}
+  #landingView .price-row.header strong{font-size:15px!important;padding:16px 18px!important}
+  .stat-main strong{font-size:clamp(64px,18vw,96px)!important}
+  .stat-main span{font-size:18px!important}
+}
+
+/* --- FAQ : fin des restes rouges/blancs --- */
+#landingView .summary-title{color:#E2E8F0!important}
+#landingView .faq-list summary:hover .summary-title{color:#C4B5FD!important}
+#landingView .faq-icon{background:transparent!important}
+#landingView .faq-list details[open] .faq-icon{background:#A78BFA!important;color:#0B0D14!important;border-color:#A78BFA!important}
+#landingView .faq-badge-top{background:rgba(167,139,250,.12)!important;color:#C4B5FD!important;border:1px solid rgba(167,139,250,.3)!important}
+#landingView .faq-help-card{background:#131722!important;border:1px solid #232D3F!important;border-radius:16px!important;box-shadow:0 18px 44px rgba(0,0,0,.35)!important}
+#landingView .faq-help-card strong{color:#E9D5FF!important}
+#landingView .faq-help-card p{color:#94A3B8!important}
+#landingView .faq-contact-btn{color:#A78BFA!important;border-bottom-color:rgba(167,139,250,.5)!important}
+#landingView .faq-contact-btn:hover{color:#D9CEFF!important}
+#landingView .faq-cat-tag{background:rgba(148,163,184,.14)!important;color:#94A3B8!important}
+#landingView .faq-cat-tag.alert{background:rgba(45,230,168,.12)!important;color:#2DE6A8!important}
+#landingView .faq-cat-tag.ai{background:rgba(167,139,250,.14)!important;color:#C4B5FD!important}
+#landingView .faq-list details{background:transparent!important}
+#landingView .faq-list details[open]{background:rgba(19,23,34,.6)!important;border-radius:12px}
