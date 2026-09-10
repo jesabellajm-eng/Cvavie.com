@@ -115,7 +115,7 @@ function experienceCard(item, index) {
         <span>Réalisations</span>
         <textarea data-key="description" rows="4" placeholder="Décrivez vos responsabilités et résultats…">${escapeHTML(item.description)}</textarea>
         <div class="field-actions">
-          <button type="button" class="btn-ai-optimize" data-target="experience" data-index="${index}">🪄 Optimiser le texte par IA</button>
+          <button type="button" class="btn-ai-optimize" data-target="experience" data-index="${index}">✦ Optimiser le texte par IA</button>
         </div>
       </label>
     </div></div>`;
@@ -615,7 +615,7 @@ $('#clientLoginForm')?.addEventListener('submit', async e => {
         ? `✓ Lifetime access confirmed for ${email}! PDF download unlocked.` 
         : `✓ Accès à vie confirmé pour ${email} ! Téléchargement PDF débloqué.`;
       
-      showToast(currentLanguage === 'en' ? '🎉 Welcome back! Lifetime access active.' : '🎉 Bon retour ! Accès à vie actif.');
+      showToast(currentLanguage === 'en' ? 'Welcome back! Lifetime access active.' : 'Bon retour ! Accès à vie actif.');
       setTimeout(() => {
         closeClientModal();
         submitBtn.disabled = false;
@@ -643,10 +643,10 @@ $('#clientLoginForm')?.addEventListener('submit', async e => {
  */
 $('#downloadBtn').addEventListener('click', () => {
   if (!userHasPaid) {
-    showToast(currentLanguage === 'en' ? '🍀 Good luck with your job search!' : '🍀 Bonne recherche d’emploi !');
+    showToast(currentLanguage === 'en' ? 'Good luck with your job search!' : 'Bonne recherche d’emploi !');
     return openPaymentModal();
   }
-  showToast(currentLanguage === 'en' ? '🍀 Good luck with your job search!' : '🍀 Bonne recherche d’emploi !');
+  showToast(currentLanguage === 'en' ? 'Good luck with your job search!' : 'Bonne recherche d’emploi !');
   exportPDF();
 });
 
@@ -809,7 +809,7 @@ document.addEventListener('click', async e => {
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.classList.add('loading');
-  btn.textContent = currentLanguage === 'en' ? '🪄 Optimizing with AI…' : '🪄 Optimisation en cours…';
+  btn.textContent = currentLanguage === 'en' ? '✦ Optimizing with AI…' : '✦ Optimisation en cours…';
 
   try {
     if (target === 'summary') {
@@ -821,7 +821,7 @@ document.addEventListener('click', async e => {
         data.summary = optimized;
         renderPreview();
         scheduleSave();
-        showToast(currentLanguage === 'en' ? '✨ Summary optimized by AI!' : '✨ Profil optimisé par IA avec succès !');
+        showToast(currentLanguage === 'en' ? '✦ Summary optimized by AI!' : '✦ Profil optimisé par IA avec succès !');
       }
     } else if (target === 'experience') {
       const index = Number(btn.dataset.index);
@@ -834,7 +834,7 @@ document.addEventListener('click', async e => {
         data.experiences[index].description = optimized;
         renderPreview();
         scheduleSave();
-        showToast(currentLanguage === 'en' ? '✨ Experience optimized by AI!' : '✨ Réalisations optimisées par IA !');
+        showToast(currentLanguage === 'en' ? '✦ Experience optimized by AI!' : '✦ Réalisations optimisées par IA !');
       }
     }
   } catch (err) {
@@ -867,9 +867,9 @@ const FR_EN = {
   "Commencer — gratuit": "Start building — free",
   "Voir le comparatif": "See how we compare",
   "Aperçu en direct — A4": "Live preview — A4",
-  '🪄 Optimisation IA de texte gratuite intégrée': '🪄 Free AI Resume Text Optimization built-in',
+  '✦ Optimisation IA de texte gratuite intégrée': '✦ Free AI Resume Text Optimization built-in',
   'Un coach en recrutement dans chaque case de votre CV.': 'A recruitment coach in every section of your resume.',
-  'En panne d’inspiration pour valoriser vos expériences ? Cliquez sur le bouton magique « 🪄 Optimiser le texte par IA » sous n’importe quelle section. Notre IA spécialisée reformule instantanément vos notes en réalisations percutantes avec verbes d’action, parfaitement calibrées pour les logiciels de tri (ATS).': 'Stuck on how to phrase your achievements? Click "🪄 Optimize text with AI" under any section. Our recruitment AI rewrites your draft with powerful action verbs and corporate phrasing, calibrated to pass ATS filters.',
+  'En panne d’inspiration pour valoriser vos expériences ? Cliquez sur le bouton magique « ✦ Optimiser le texte par IA » sous n’importe quelle section. Notre IA spécialisée reformule instantanément vos notes en réalisations percutantes avec verbes d’action, parfaitement calibrées pour les logiciels de tri (ATS).': 'Stuck on how to phrase your achievements? Click "✦ Optimize text with AI" under any section. Our recruitment AI rewrites your draft with powerful action verbs and corporate phrasing, calibrated to pass ATS filters.',
   '100 % gratuit et illimité pendant toute la rédaction': '100% free and unlimited while you write',
   'Verbes d’action puissants en tête de phrase pour capter l’œil du recruteur': 'Powerful action verbs at the start of each bullet to catch the recruiter\'s eye',
   'Mots-clés stratégiques calibrés pour maximiser votre score ATS': 'Strategic keywords calibrated to maximize your ATS score',
@@ -877,7 +877,7 @@ const FR_EN = {
   'Tester l’optimisation IA gratuitement →': 'Try AI text optimization for free →',
   'Brouillon initial': 'Initial draft',
   '« J’ai géré des projets web et aidé mon équipe à respecter les délais de livraison. J’ai aussi discuté avec les clients. »': '“Managed web projects and helped my team meet delivery deadlines. Also discussed with clients.”',
-  '✨ Version optimisée par l’IA': '✨ AI-Optimized Version',
+  '✦ Version optimisée par l’IA': '✦ AI-Optimized Version',
   'Couleur :': 'Colour:',
 
   'Connexion / Accès client':'Client Login / Access',
@@ -891,8 +891,8 @@ const FR_EN = {
   'Courriel pour votre reçu et accès à vie':'Email for your receipt and lifetime access',
   'Débloquer mon accès à vie pour 23,99 $':'Unlock lifetime access for $23.99',
   'Déjà payé ? Se connecter':'Already paid? Log in',
-  '🪄 Optimiser le texte par IA':'🪄 AI Optimize Text',
-  '🪄 Optimisation en cours…':'🪄 Optimizing with AI…',
+  '✦ Optimiser le texte par IA':'✦ AI Optimize Text',
+  '✦ Optimisation en cours…':'✦ Optimizing with AI…',
   'Fonctionnement':'How it works','Avantages':'Features','Modèles':'Templates','Créer mon CV':'Create my resume',
   'Sans abonnement. Maintenant ou plus tard.':'No subscription. Not now, not later.','Payez une fois.':'Pay once.','Créez votre CV':'Build your resume','pour la vie.':'for life.',
   '23,99 $ — un seul paiement, accès à vie.':'$23.99 — one payment, lifetime access.','Sans abonnement, jamais.':'No subscription, ever.','Voir la comparaison':'See the comparison',
@@ -951,7 +951,7 @@ const FR_EN = {
   'Votre prochaine étape':'Your next step','Rédigez-le gratuitement.':'Write it for free.','Décidez à la fin.':'Decide at the end.','Créez votre CV sans inscription. Ne payez que lorsque vous êtes prêt à le télécharger.':'Build your resume without signing up. Pay only when you are ready to download.',
   'Commencer maintenant →':'Start now →','Un seul paiement.':'One payment.','Accès à vie.':'Lifetime access.','23,99 $ • aucun abonnement':'$23.99 • no subscription','Des CV professionnels, sans abonnement.':'Professional resumes, without subscriptions.',
   'PRODUIT':'PRODUCT','AIDE':'HELP','LÉGAL':'LEGAL','Confidentialité':'Privacy','Conditions':'Terms','Prix':'Pricing','Tous droits réservés.':'All rights reserved.',
-  'Étape 1 sur 2':'Step 1 of 2','Choisissez votre modèle et votre couleur.':'Choose your template and your colour.','Sélectionnez le style qui vous représente, puis votre couleur d’accent. Vous pourrez en changer à tout moment pendant la rédaction.':'Pick the style that represents you, then your accent colour. You can change it any time while writing.','Couleur d’accent':'Accent colour','Elle s’applique instantanément à votre modèle.':'It is applied to your template instantly.','Modèle sélectionné':'Selected template','Continuer vers la rédaction →':'Continue to writing →','Style choisi':'Chosen style','← Changer de style':'← Change style','🍀 Bonne recherche d’emploi !':'🍀 Good luck with your job search!','Accès à vie requis pour le téléchargement':'Lifetime access required to download','paiement unique':'one-time payment',
+  'Étape 1 sur 2':'Step 1 of 2','Choisissez votre modèle et votre couleur.':'Choose your template and your colour.','Sélectionnez le style qui vous représente, puis votre couleur d’accent. Vous pourrez en changer à tout moment pendant la rédaction.':'Pick the style that represents you, then your accent colour. You can change it any time while writing.','Couleur d’accent':'Accent colour','Elle s’applique instantanément à votre modèle.':'It is applied to your template instantly.','Modèle sélectionné':'Selected template','Continuer vers la rédaction →':'Continue to writing →','Style choisi':'Chosen style','← Changer de style':'← Change style','Bonne recherche d’emploi !':'Good luck with your job search!','Accès à vie requis pour le téléchargement':'Lifetime access required to download','paiement unique':'one-time payment',
   '← Accueil':'← Home','Modèle':'Template','Personnalisation':'Customization','Choisissez une couleur d’accent':'Choose an accent colour','La couleur s’applique instantanément au modèle sélectionné.':'The colour is applied instantly to the selected template.','Styles disponibles':'Available styles','Choisissez parmi 8 modèles':'Choose from 8 templates','Changement instantané':'Instant switching','Héritage':'Heritage','Exécutif':'Executive','Forêt':'Forest','Corail':'Coral','Pur ATS':'Pure ATS','Essentiel':'Essential','Sauvegardé':'Saved','Sauvegarde…':'Saving…','Télécharger en PDF':'Download PDF','Votre parcours':'Your career','Construisons votre CV.':'Let’s build your resume.','Remplissez les champs : l’aperçu se met à jour automatiquement.':'Fill in the fields: the preview updates automatically.',
   'Informations personnelles':'Personal information','Profil':'Profile','Nom complet':'Full name','Titre professionnel':'Professional title','Courriel':'Email','Téléphone':'Phone','Ville':'City','LinkedIn / Site':'LinkedIn / Website','Profil / Sommaire':'Profile / Summary','Résumé professionnel':'Professional summary','caractères':'characters',
   'Expériences professionnelles':'Work experience','Ajouter une expérience':'Add experience','Éducation':'Education','Ajouter une formation':'Add education','Compétences':'Skills','Une compétence par ligne':'One skill per line','Langues':'Languages','Langue — Niveau, une par ligne':'Language — Level, one per line','Aperçu en direct':'Live preview','Format lettre':'Letter size',
@@ -994,7 +994,7 @@ const FR_EN = {
   'Un bouton magique gratuit qui reformule vos tâches dans un langage corporatif et percutant.': 'A free magic button that rewrites your accomplishments in high-impact corporate language.',
   'Verbes d’action percutants en début de phrase': 'Powerful action verbs at the start of each bullet',
   'Vocabulaire et mots-clés valorisants pour les RH': 'High-value vocabulary and keywords for HR recruiters',
-  '🎯 Modèles 100% ATS-Friendly :': '🎯 100% ATS-Friendly templates:',
+  'Modèles 100% ATS-Friendly :': '100% ATS-Friendly templates:',
   'Nos 8 designs épurés sont validés pour passer les filtres des robots de recrutement des grandes entreprises.': 'Our 8 clean designs are validated to pass applicant tracking systems at top employers.',
   'Texte vectoriel sélectionnable sans colonnes piégeuses': 'Selectable vector text without complex parsing columns',
   'Rubriques normées reconnues automatiquement': 'Standardized headings recognized automatically by software',
@@ -1044,7 +1044,7 @@ const FR_EN = {
   'Pourquoi d’autres créateurs de CV proposent-ils des offres à 2 $ ou 3 $ ?': 'Why do other resume builders offer $2 or $3 download deals?',
   'C’est le piège d’abonnement le plus répandu de l’industrie, souvent appelé le « faux essai à 2 $ ». Ces plateformes affichent un tarif symbolique de 1,95 $ ou 2,95 $ pour télécharger le premier document, mais leurs conditions générales dissimulent un abonnement mensuel automatique de 30 $ à 50 $ prélevé chaque mois sur votre carte bancaire. Chez CVavie.com, nous refusons formellement ce modèle : un tarif unique de 23,99 $, transparent, honnête et garanti à vie.': 'This is the most prevalent subscription trap in the industry, often known as the "$2 bait-and-switch." These sites promote an enticing $1.95 or $2.95 download fee, but bury an automatic recurring monthly subscription of $30 to $50 in their fine print. At CVavie.com, we strictly refuse such deceptive tactics: one honest, upfront payment of $23.99 with lifetime access.',
   'Comment fonctionne l’optimisation de texte par intelligence artificielle (IA) ?': 'How does the AI text optimization feature work?',
-  'Directement intégrée sous vos rubriques de profil et d\'expériences professionnelles, notre fonction « 🪄 Optimiser le texte par IA » analyse vos phrases et les reformule instantanément dans un style corporatif formel, percutant et valorisant. L’IA commence chaque accomplissement par un verbe d’action puissant et optimise le vocabulaire pour franchir avec succès les robots de tri RH (ATS). Cette fonctionnalité est 100 % gratuite et accessible en illimité dès la rédaction.': 'Positioned directly beneath your summary and work experience descriptions, the "🪄 AI Optimize Text" button analyzes your draft and instantly rewrites it in high-impact, professional corporate language. The AI leads every achievement with strong action verbs and optimizes strategic keywords to effortlessly pass HR screening robots (ATS). This feature is 100% free and unlimited while writing.',
+  'Directement intégrée sous vos rubriques de profil et d\'expériences professionnelles, notre fonction « ✦ Optimiser le texte par IA » analyse vos phrases et les reformule instantanément dans un style corporatif formel, percutant et valorisant. L’IA commence chaque accomplissement par un verbe d’action puissant et optimise le vocabulaire pour franchir avec succès les robots de tri RH (ATS). Cette fonctionnalité est 100 % gratuite et accessible en illimité dès la rédaction.': 'Positioned directly beneath your summary and work experience descriptions, the "✦ AI Optimize Text" button analyzes your draft and instantly rewrites it in high-impact, professional corporate language. The AI leads every achievement with strong action verbs and optimizes strategic keywords to effortlessly pass HR screening robots (ATS). This feature is 100% free and unlimited while writing.',
   'Les modèles sont-ils 100 % compatibles avec les robots de recrutement (ATS) ?': 'Are the resume templates 100% ATS-friendly?',
   'Oui, à 100 %. Les logiciels ATS (Applicant Tracking Systems) filtrent automatiquement les candidatures avant l\'examen par un recruteur. Nos 8 modèles respectent scrupuleusement les exigences des ATS : texte vectoriel sélectionnable, polices de caractères universelles, titres de sections standards reconnus et absence totale de graphismes perturbateurs qui bloquent les algorithmes d’extraction.': 'Yes, 100%. Applicant Tracking Systems (ATS) scan and parse resumes before human recruiters see them. All 8 of our templates strictly adhere to ATS standards: clean selectable text, universal standard fonts, recognized section headers, and zero complex graphic artifacts that cause parsing errors.',
   'Que comprend l\'accès à vie à 23,99 $ sur CVavie.com ?': 'What is included with lifetime access for $23.99 on CVavie.com?',
@@ -1468,8 +1468,8 @@ if (urlParams.get('paid') === 'true') {
   showBuilder(data.template);
   setTimeout(() => {
     showToast(currentLanguage === 'en'
-      ? '✓ Payment confirmed — lifetime access unlocked. 🍀 Good luck with your job search!'
-      : '✓ Paiement confirmé — accès à vie débloqué. 🍀 Bonne recherche d’emploi !');
+      ? '✓ Payment confirmed — lifetime access unlocked. Good luck with your job search!'
+      : '✓ Paiement confirmé — accès à vie débloqué. Bonne recherche d’emploi !');
   }, 400);
   setTimeout(() => { if (userHasPaid) exportPDF(); }, 2200);
 }

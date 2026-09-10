@@ -4422,3 +4422,14 @@ footer .site-brand .brand-tld{color:#7C8598!important}
 #landingView .saving-note b{color:#2DE6A8!important;font-size:17px!important}
 .stat-main strong{font-size:clamp(72px,9vw,130px)!important;color:#2DE6A8!important}
 .stat-main span{font-size:18px!important;color:#CBD5E1!important}
+
+/* --- Comparatif : coches/croix + bouton d'action (version pub Google Ads) --- */
+#landingView .comparison-copy .cta-mauve-btn{margin-top:26px}
+.pc-check,.pc-cross{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:12px;font-weight:800;margin-right:9px;vertical-align:-2px}
+.pc-check{background:rgba(45,230,168,.15);color:#2DE6A8}
+.pc-cross{background:rgba(148,163,184,.12);color:#64748B}
+#landingView .price-row strong{display:flex;align-items:center}
+#landingView .price-row em{display:flex;align-items:center}
+@media (max-width:900px){
+  .pc-check,.pc-cross{width:19px;height:19px;font-size:10.5px;margin-right:7px}
+}
