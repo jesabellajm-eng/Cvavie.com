@@ -966,6 +966,15 @@ const FR_EN = {
   'Décider': 'Decide',
   'Optimiser avec l’IA à vie': 'Optimize with AI for life',
   '8 modèles ATS, une IA qui rédige avec vous, un PDF impeccable.': '8 ATS templates, AI that writes with you, a flawless PDF.',
+  'Paye une seule fois — accès à vie, jamais d’abonnement caché sous une offre à 2 $.': 'Pay once — lifetime access, never a hidden subscription behind a $2 offer.',
+  '8 templates ATS': '8 ATS templates',
+  'IA qui rédige avec vous': 'AI that writes with you',
+  'Un PDF impeccable': 'A flawless PDF',
+  'à seulement 23,99 $': 'for only $23.99',
+  'Payez': 'Pay',
+  'une fois': 'once',
+  'ou payez': 'or pay',
+  'chaque mois': 'every month',
   '8 templates ATS': '8 ATS templates',
   'Sans filigrane': 'No watermark',
   'Illimité': 'Unlimited',
@@ -1269,6 +1278,10 @@ function renderHomeGallery(lang = currentLanguage) {
     btn.addEventListener('click', () => showChooser(btn.dataset.template));
   });
 
+  // Applique l'accent choisi (ou sauvegardé) aux vignettes
+  const gallerySection = gallery.closest('.templates');
+  if (gallerySection) gallerySection.style.setProperty('--gallery-accent', data.accentColor || '#213f6d');
+
   renderHeroCvStack(lang);
   requestAnimationFrame(updateThumbScales);
 }
@@ -1469,6 +1482,10 @@ function handleGlobalSwatchClick(e) {
   data.accentColor = swatch.dataset.color;
   renderPreview();
   scheduleSave();
+  // Recolore aussi les vignettes de la galerie d'accueil et du sélecteur
+  $$('.templates, .builder-templates').forEach(el => {
+    el.style.setProperty('--gallery-accent', data.accentColor);
+  });
   if (typeof updateStyleLabels === 'function') updateStyleLabels();
 }
 document.addEventListener('click', handleGlobalSwatchClick);

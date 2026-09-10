@@ -101,7 +101,7 @@
   box-sizing: border-box;
 }
 
-.templates{--gallery-accent:#c1154e}.templates .resume-card .rc-section,.templates .resume-card .rc-role{color:var(--gallery-accent)}.templates .resume-card .rc-contact{border-color:var(--gallery-accent)}.templates .resume-card.meridian .rc-section:before,.templates .resume-card.vector .rc-banner{background:var(--gallery-accent)}.templates .resume-card.harbor .rc-rail{background:color-mix(in srgb,var(--gallery-accent) 10%,white)}.builder-templates{--gallery-accent:#c1154e}.builder-templates .resume-card .rc-section,.builder-templates .resume-card .rc-role{color:var(--gallery-accent)}.builder-templates .resume-card .rc-contact{border-color:var(--gallery-accent)}.builder-templates .resume-card.meridian .rc-section:before,.builder-templates .resume-card.vector .rc-banner{background:var(--gallery-accent)}.builder-templates .resume-card.harbor .rc-rail{background:color-mix(in srgb,var(--gallery-accent) 10%,white)}
+.templates{--gallery-accent:#213f6d}.templates .resume-card .rc-section,.templates .resume-card .rc-role{color:var(--gallery-accent)}.templates .resume-card .rc-contact{border-color:var(--gallery-accent)}.templates .resume-card.meridian .rc-section:before,.templates .resume-card.vector .rc-banner{background:var(--gallery-accent)}.templates .resume-card.harbor .rc-rail{background:color-mix(in srgb,var(--gallery-accent) 10%,white)}.builder-templates{--gallery-accent:#213f6d}.builder-templates .resume-card .rc-section,.builder-templates .resume-card .rc-role{color:var(--gallery-accent)}.builder-templates .resume-card .rc-contact{border-color:var(--gallery-accent)}.builder-templates .resume-card.meridian .rc-section:before,.builder-templates .resume-card.vector .rc-banner{background:var(--gallery-accent)}.builder-templates .resume-card.harbor .rc-rail{background:color-mix(in srgb,var(--gallery-accent) 10%,white)}
 @media(max-width:680px){.builder-colors{align-items:flex-start;flex-direction:column}.builder-palette{max-width:none;justify-content:flex-start}.templates-head .accent-palette{display:flex;max-width:150px}.templates-head .color-swatch{width:17px;height:17px;flex-basis:17px}}
 @media print{body{background:#fff}.app-header,.editor-panel,.preview-toolbar{display:none}.workspace,.preview-panel,.preview-viewport{display:block;height:auto;overflow:visible;background:#fff;padding:0}.resume{box-shadow:none;transform:none;margin:0}}
 
@@ -4387,3 +4387,38 @@ footer .site-brand .brand-tld{color:#7C8598!important}
 /* Chiffres et montants d'économie en vert (déjà turquoise Semrush, renforcé) */
 #landingView .price-table .price-row strong:first-of-type{color:var(--mint-bright)!important}
 #landingView .comparison strong{color:inherit}
+
+/* --- Sous-titre héro : plus gros et en gras (demande Jessica) --- */
+.prestige-sub{
+  font-size:clamp(19px,2.2vw,26px)!important;font-weight:700!important;
+  color:#E2E8F0!important;line-height:1.5!important;max-width:820px!important;
+}
+
+/* --- Bande de preuves turquoise, collée à la ligne de fin du héro --- */
+.hero-proof-strip{
+  position:relative;z-index:2;width:calc(100% + 48px);margin:26px -24px 0;
+  padding:18px 24px 20px;border-top:1px solid #232D3F;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px 16px;
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif;
+  font-size:clamp(15px,1.7vw,19px);font-weight:700;color:#2DE6A8;text-align:center;
+}
+.hero-proof-strip .hps-sep{color:#1B5E4B;font-weight:400}
+.hero-proof-strip .hps-item strong{color:#5EEAD4;font-weight:800}
+
+/* --- Bloc comparatif XXL : grandes lettres, très lisible (usage Google Ads) --- */
+#landingView .comparison{gap:clamp(40px,5vw,80px)!important}
+#landingView .comparison h2{font-size:clamp(46px,5.4vw,74px)!important;line-height:1.02!important;letter-spacing:-.03em!important}
+#landingView .comparison h2 em{font-style:normal}
+#landingView .comparison h2 .hl-mint{color:#2DE6A8}
+#landingView .comparison h2 .hl-dim{color:#64748B}
+#landingView .comparison-copy>p:last-child{font-size:17px!important;line-height:1.6!important}
+#landingView .price-row>*{font-size:16px!important;padding:18px 22px!important}
+#landingView .price-row.header strong{font-size:15px!important}
+#landingView .price-row.header strong:nth-of-type(1){color:#2DE6A8!important}
+#landingView .price-row span{font-size:15.5px!important}
+#landingView .price-row strong{font-size:19px!important;font-weight:800!important;color:#FFFFFF!important}
+#landingView .price-row em{font-size:16.5px!important;color:#64748B!important;text-decoration:line-through;text-decoration-color:rgba(100,116,139,.6)}
+#landingView .saving-note{font-size:15px!important;padding:18px 22px!important}
+#landingView .saving-note b{color:#2DE6A8!important;font-size:17px!important}
+.stat-main strong{font-size:clamp(72px,9vw,130px)!important;color:#2DE6A8!important}
+.stat-main span{font-size:18px!important;color:#CBD5E1!important}
