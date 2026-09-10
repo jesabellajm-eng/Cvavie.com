@@ -4202,3 +4202,233 @@ footer a,footer p,footer small{color:var(--ds-muted)!important}footer strong{col
   .hero-desk-frame{height:390px!important;transform:scale(.66)!important;transform-origin:top center!important;margin-bottom:-115px!important}
   .hero-dark .floating-pill.desk-pill{right:0!important;bottom:4%!important}
 }
+
+/* ============================================================
+   HEADER PRESTIGE + HÉRO « Créer. Décider. Optimiser à vie ! »
+   Direction : campagne Semrush AI Visibility (faux noir #090B10)
+   ============================================================ */
+
+/* --- Header en 3 zones : logo | langues | actions --- */
+.site-header.prestige-header{
+  display:grid!important;grid-template-columns:1fr auto 1fr;align-items:center;
+  background:#090B10!important;height:auto!important;min-height:72px;
+  padding:14px clamp(20px,5vw,64px)!important;gap:16px;
+  border-bottom:1px solid #1B2230;
+}
+.site-header .site-brand{
+  justify-self:start;display:inline-flex;align-items:center;gap:11px;
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif!important;
+  font-size:21px!important;letter-spacing:-0.02em;
+}
+.logo-fan{width:34px;height:32px;flex-shrink:0;
+  filter:drop-shadow(0 0 12px rgba(167,139,250,.55)) drop-shadow(0 8px 20px rgba(124,58,237,.35))}
+.site-brand .brand-cv{color:#C4B5FD!important;font-weight:800!important}
+.site-brand .brand-avie{color:#C4B5FD!important;font-weight:650!important;margin-left:1px}
+.site-brand .brand-tld{color:#7C8598!important;font-weight:500!important;font-size:.72em;margin-left:2px}
+
+/* --- Sélecteur de langue ultra-minimaliste, centré --- */
+.lang-minimal{
+  justify-self:center;display:inline-flex!important;align-items:center;gap:10px;
+  border:0!important;background:transparent!important;border-radius:0!important;overflow:visible;
+}
+.lang-minimal .lang-btn{
+  background:transparent!important;border:0!important;color:#8B93A7!important;
+  font-weight:400;font-size:12.5px!important;letter-spacing:.16em;
+  padding:4px 2px!important;cursor:pointer;transition:color .2s;
+}
+.lang-minimal .lang-btn:hover{color:#E2E8F0!important}
+.lang-minimal .lang-btn.active{color:#C4B5FD!important;font-weight:600;background:transparent!important}
+.lang-minimal .lang-divider{color:#3A4356;font-weight:300;font-size:12px}
+
+/* --- Actions à droite --- */
+.prestige-header .site-actions{justify-self:end;display:flex;align-items:center;gap:20px}
+.prestige-header .client-link{
+  background:transparent;border:0;color:#8B93A7;font-size:12px;cursor:pointer;
+  padding:0;transition:color .2s;white-space:nowrap;
+}
+.prestige-header .client-link:hover{color:#E2E8F0}
+
+/* --- Bouton fantôme « CV Studio + IA ✦ » --- */
+.studio-ia-btn{
+  display:inline-flex!important;align-items:center;gap:9px;
+  background:rgba(9,11,16,.55)!important;background-image:none!important;
+  color:#E9D5FF!important;border:1px solid rgba(196,181,253,.55)!important;
+  border-radius:999px!important;padding:11px 22px!important;
+  font-weight:650!important;font-size:13.5px!important;letter-spacing:.02em;
+  line-height:1!important;cursor:pointer;white-space:nowrap;
+  box-shadow:none!important;
+  transition:border-color .25s,box-shadow .25s,transform .25s,background .25s!important;
+}
+.studio-ia-btn .btn-ia-star{
+  width:15px;height:15px;color:#A78BFA;flex-shrink:0;
+  animation:starTwinkle 2.6s ease-in-out infinite;transform-origin:center;
+}
+.studio-ia-btn:hover{
+  background:rgba(157,78,221,.12)!important;border-color:#C4B5FD!important;
+  box-shadow:0 0 26px rgba(167,139,250,.35)!important;
+  transform:translateY(-1px)!important;filter:none!important;
+}
+@keyframes starTwinkle{
+  0%,100%{opacity:.7;transform:scale(1) rotate(0deg)}
+  50%{opacity:1;transform:scale(1.22) rotate(14deg)}
+}
+
+/* --- Héro prestige : titre géant + feuilles flottantes --- */
+.hero-prestige{
+  position:relative;background:#090B10;
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:80px 24px 0;overflow:hidden;
+}
+.hero-prestige::before{
+  content:"";position:absolute;width:min(820px,95%);height:480px;top:34%;left:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse at center,rgba(157,78,221,.17) 0%,rgba(157,78,221,.05) 45%,transparent 72%);
+  filter:blur(12px);pointer-events:none;
+}
+.prestige-title{
+  position:relative;z-index:2;margin:0;
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif;
+  font-weight:800;letter-spacing:-.04em;line-height:1.08;
+  font-size:clamp(38px,6vw,80px);color:#FFFFFF;max-width:1100px;
+}
+.prestige-title .pt-line{display:inline;white-space:nowrap}
+.prestige-title .violet-dot{color:#9D4EDD}
+.prestige-sub{
+  position:relative;z-index:2;margin:28px 0 0;font-weight:350;
+  font-size:clamp(15px,1.5vw,18.5px);line-height:1.75;color:#94A3B8;max-width:600px;
+}
+.prestige-price{position:relative;z-index:2;margin:18px 0 0;font-size:13px;letter-spacing:.03em;color:#64748B}
+.prestige-price strong{color:#C4B5FD;font-weight:700}
+
+/* --- Composition 3D isométrique des CV (style Semrush) --- */
+.prestige-visual{
+  position:relative;z-index:1;width:min(780px,96%);height:440px;margin-top:38px;
+  perspective:1600px;display:grid;place-items:start center;pointer-events:none;
+}
+.prestige-visual .iso-scene{
+  position:relative;width:300px;height:400px;margin-top:10px;
+  transform-style:preserve-3d;transform:rotateX(55deg) rotateZ(-45deg);
+}
+.prestige-visual .iso-scene::after{
+  content:"";position:absolute;inset:-46px -70px;transform:translateZ(-26px);
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.78) 0%,rgba(0,0,0,.35) 45%,transparent 75%);
+  filter:blur(18px);border-radius:50%;
+}
+.prestige-visual .cv-sheet{
+  position:absolute;inset:0;background:#F8FAFC;border-radius:8px;
+  padding:30px 26px;display:flex;flex-direction:column;gap:12px;
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,
+    -18px 24px 50px rgba(0,0,0,.55),
+    -42px 64px 96px rgba(0,0,0,.32);
+}
+/* Éventail : la 3e reste de base, la 2e s'ouvre haut-gauche, la 1re bas-droite */
+.prestige-visual .cv-sheet--back{
+  transform:translateZ(0);
+  filter:brightness(.85);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,
+    -10px 14px 34px rgba(0,0,0,.45),
+    -26px 40px 70px rgba(0,0,0,.28);
+}
+.prestige-visual .cv-sheet--mid{
+  transform:translateZ(44px) translate(-15px,-15px) rotate(-2deg);
+  filter:brightness(.94);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,
+    -16px 22px 44px rgba(0,0,0,.5),
+    -36px 56px 88px rgba(0,0,0,.3);
+}
+.prestige-visual .cv-sheet--front{
+  transform:translateZ(88px) translate(15px,15px) rotate(2deg);
+  animation:floatSheet 5s ease-in-out infinite;
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,
+    -22px 30px 56px rgba(0,0,0,.58),
+    -50px 78px 110px rgba(0,0,0,.34);
+}
+@keyframes floatSheet{
+  0%,100%{transform:translateZ(88px) translate(15px,15px) rotate(2deg)}
+  50%{transform:translateZ(100px) translate(15px,15px) rotate(2deg)}
+}
+
+/* Cartes de données blanches flottantes + pastilles pâles (style Semrush AI Visibility) */
+.data-card{
+  position:absolute;z-index:3;width:218px;background:#F8FAFC;border-radius:12px;
+  padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 24px 60px rgba(0,0,0,.55),0 6px 18px rgba(0,0,0,.35),
+    0 0 0 1px rgba(255,255,255,.06);
+  pointer-events:none;
+}
+.dc-title{font-size:14.5px;font-weight:800;letter-spacing:-.01em;color:#0A2540;margin-bottom:2px}
+.dc-row{display:flex;align-items:center;gap:10px}
+.dc-label{font-size:11px;font-weight:600;color:#64748B;width:64px;flex-shrink:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dc-bar{height:8px;border-radius:4px;width:var(--w,70%);
+  background:linear-gradient(90deg,#9D4EDD 0%,#22D3EE 100%)}
+.dc-row:nth-child(3) .dc-bar{background:linear-gradient(90deg,#7C3AED,#9D4EDD)}
+.dc-row:nth-child(4) .dc-bar{background:linear-gradient(90deg,#22D3EE,#5EEAD4)}
+.card-templates{left:5.5%;top:52%;transform:rotate(-6deg);animation:cardFloat 7s ease-in-out infinite}
+.card-pdf{right:5.5%;top:36%;transform:rotate(5deg);animation:cardFloat 8s ease-in-out 1.4s infinite}
+@keyframes cardFloat{
+  0%,100%{translate:0 0}
+  50%{translate:0 -16px}
+}
+
+/* Pastilles pâles façon « Key takeaways » */
+.pale-chip{
+  position:absolute;z-index:3;display:inline-flex;align-items:center;gap:7px;
+  background:#E9D5FF;color:#4C1D95;border-radius:10px;padding:10px 16px;
+  font-size:13px;font-weight:700;letter-spacing:.01em;
+  box-shadow:0 14px 34px rgba(0,0,0,.45);pointer-events:none;
+}
+.chip-ia{left:11%;top:80%;transform:rotate(-3deg);animation:cardFloat 6.5s ease-in-out .7s infinite}
+.chip-price{right:11%;top:66%;transform:rotate(3deg);animation:cardFloat 7.5s ease-in-out 2s infinite}
+
+/* Squelette de CV factice */
+.prestige-visual .sk{display:block;height:9px;border-radius:5px;background:#E2E8F0}
+.prestige-visual .sk--w40{width:40%}.prestige-visual .sk--w65{width:65%}
+.prestige-visual .sk--w85{width:85%}.prestige-visual .sk--w100{width:100%}
+.prestige-visual .sk--purple{background:rgba(157,78,221,.55)}
+.prestige-visual .sk--navy{background:#CBD5E1;height:14px}
+.prestige-visual .sk-gap{height:14px}
+.prestige-visual .sk-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#E2E8F0,#CBD5E1)}
+.prestige-visual .sk-row{display:flex;align-items:center;gap:14px}
+.prestige-visual .sk-col{display:flex;flex-direction:column;gap:8px;flex:1}
+
+/* Couverture de la feuille du dessus */
+.prestige-visual .cv-cover-kicker{font-size:11px;font-weight:700;letter-spacing:.28em;
+  text-transform:uppercase;color:#9D4EDD}
+.prestige-visual .cv-cover-title{display:block;font-size:34px;line-height:1.15;font-weight:800;
+  letter-spacing:-.02em;color:#0A2540;margin:4px 0 10px}
+.prestige-visual .cv-cover-title em{font-style:normal;color:#9D4EDD}
+.prestige-visual .cv-cover-rule{display:block;width:56px;height:4px;border-radius:2px;
+  background:linear-gradient(90deg,#9D4EDD,#C084FC);margin-bottom:14px}
+
+@media(max-width:720px){
+  .site-header.prestige-header{
+    grid-template-columns:auto auto;grid-template-areas:"brand actions" "lang lang";
+    row-gap:8px;padding:12px 18px!important;
+  }
+  .site-header .site-brand{grid-area:brand}
+  .lang-minimal{grid-area:lang}
+  .prestige-header .site-actions{grid-area:actions;gap:14px}
+  .prestige-header .client-link{font-size:11px}
+  .hero-prestige{padding-top:72px}
+  .data-card,.pale-chip{display:none}
+  .prestige-visual{height:340px;margin-top:40px;transform:scale(.66);transform-origin:top center}
+}
+
+/* --- Bouton central mauve « Commencer à créer » (style Semrush) --- */
+.cta-mauve-btn{
+  position:relative;z-index:2;margin-top:30px;
+  display:inline-flex!important;align-items:center;justify-content:center;
+  background:#C4B5FD!important;background-image:none!important;
+  color:#0B0D14!important;border:0!important;border-radius:999px!important;
+  padding:16px 38px!important;font-weight:750!important;font-size:15.5px!important;
+  letter-spacing:.01em;line-height:1!important;cursor:pointer;
+  box-shadow:0 12px 34px rgba(196,181,253,.35)!important;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease!important;
+}
+.cta-mauve-btn:hover{
+  background:#D9CEFF!important;transform:translateY(-2px)!important;
+  box-shadow:0 18px 42px rgba(196,181,253,.48)!important;filter:none!important;
+}
+.cta-mauve-btn:active{transform:translateY(0)!important}

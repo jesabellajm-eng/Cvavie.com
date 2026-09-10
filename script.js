@@ -905,6 +905,19 @@ const FR_EN = {
   'Le premier créateur de CV par IA accessible à vie': 'The first AI-powered resume builder with lifetime access',
   'Le premier créateur de CV par IA': 'The first AI-powered resume builder',
   'accessible à vie.': 'with lifetime access.',
+  'Créer': 'Create',
+  'Décider': 'Decide',
+  'Optimiser avec l’IA à vie': 'Optimize with AI for life',
+  '8 modèles ATS, une IA qui rédige avec vous, un PDF impeccable.': '8 ATS templates, AI that writes with you, a flawless PDF.',
+  '8 templates ATS': '8 ATS templates',
+  'Sans filigrane': 'No watermark',
+  'Illimité': 'Unlimited',
+  '✦ Optimisé par IA': '✦ AI-optimized',
+  '23,99 $ à vie': '$23.99 for life',
+  'Export PDF': 'PDF Export',
+  '23,99 $': '$23.99',
+  'une seule fois — accès à vie, jamais d’abonnement caché sous une offre à 2 $.': 'one time only — lifetime access, never a hidden subscription behind a $2 offer.',
+  'Commencer à créer': 'Start creating',
   'Ici, pas de piège ni d’abonnement caché. Optimisez votre contenu avec notre IA et téléchargez votre CV parfait pour seulement 23,99 $ une seule fois.': 'No traps, no hidden subscriptions. Optimize your content with our AI and download your perfect resume for just $23.99 once.',
   'Pourquoi CVavie': 'Why CVavie',
   'Pourquoi nous choisir': 'Why choose us',
@@ -984,6 +997,7 @@ function translateRoot(root, lang) {
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
   nodes.forEach(node => {
+    if (node.parentElement && node.parentElement.closest('.prestige-visual')) return;
     if (!node.__frText) node.__frText = node.nodeValue;
     const original = node.__frText;
     const trimmed = original.trim().replace(/\s+/g, " ");
