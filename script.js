@@ -1152,9 +1152,11 @@ function renderHeroCvStack(lang = currentLanguage) {
   const stack = document.getElementById('heroCvStack');
   if (!stack || !window.TEMPLATES_DATA) return;
   const isEn = lang === 'en';
-  const picks = [window.TEMPLATES_DATA[2], window.TEMPLATES_DATA[6], window.TEMPLATES_DATA[0]];
-  const positions = ['cv-left', 'cv-center', 'cv-right'];
-  stack.innerHTML = picks.map((t, i) => [
+  // La composition reprend la référence : un carnet sombre au centre,
+  // entouré de feuilles de CV qui flottent à différentes profondeurs.
+  const picks = [window.TEMPLATES_DATA[2], window.TEMPLATES_DATA[6], window.TEMPLATES_DATA[0], window.TEMPLATES_DATA[4]];
+  const positions = ['cv-sheet-top-left', 'cv-sheet-top-right', 'cv-sheet-bottom-left', 'cv-sheet-bottom-right'];
+  const sheets = picks.map((t, i) => [
     '<div class="floating-cv ' + positions[i] + '">',
     '  <div class="floating-cv-scale">',
     '    <div class="' + t.pageClass + '" style="' + t.pageStyle + '">',
@@ -1163,6 +1165,10 @@ function renderHeroCvStack(lang = currentLanguage) {
     '  </div>',
     '</div>'
   ].join('')).join('');
+  const cover = isEn
+    ? '<span class="hero-cover-overline">AI RESUME STUDIO</span><strong>Stand out.<br><em>Get hired.</em></strong><span class="hero-cover-foot">CVAVIE.COM&nbsp; · &nbsp;YOUR CAREER, CLEARLY</span>'
+    : '<span class="hero-cover-overline">ATELIER CV PROPULSÉ PAR L’IA</span><strong>Votre CV.<br><em>Votre avenir.</em></strong><span class="hero-cover-foot">CVAVIE.COM&nbsp; · &nbsp;VOTRE CARRIÈRE, CLAIREMENT</span>';
+  stack.innerHTML = sheets + '<div class="hero-cover" aria-hidden="true">' + cover + '</div>';
 }
 
 function renderHomeGallery(lang = currentLanguage) {
