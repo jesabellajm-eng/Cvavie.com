@@ -903,6 +903,8 @@ const FR_EN = {
 
   // CVavie.com Brand & SEO Translations
   'Le premier créateur de CV par IA accessible à vie': 'The first AI-powered resume builder with lifetime access',
+  'Le premier créateur de CV par IA': 'The first AI-powered resume builder',
+  'accessible à vie.': 'with lifetime access.',
   'Ici, pas de piège ni d’abonnement caché. Optimisez votre contenu avec notre IA et téléchargez votre CV parfait pour seulement 23,99 $ une seule fois.': 'No traps, no hidden subscriptions. Optimize your content with our AI and download your perfect resume for just $23.99 once.',
   'Pourquoi CVavie': 'Why CVavie',
   'Pourquoi nous choisir': 'Why choose us',
@@ -1146,6 +1148,23 @@ function updateThumbScales() {
   });
 }
 
+function renderHeroCvStack(lang = currentLanguage) {
+  const stack = document.getElementById('heroCvStack');
+  if (!stack || !window.TEMPLATES_DATA) return;
+  const isEn = lang === 'en';
+  const picks = [window.TEMPLATES_DATA[2], window.TEMPLATES_DATA[6], window.TEMPLATES_DATA[0]];
+  const positions = ['cv-left', 'cv-center', 'cv-right'];
+  stack.innerHTML = picks.map((t, i) => [
+    '<div class="floating-cv ' + positions[i] + '">',
+    '  <div class="floating-cv-scale">',
+    '    <div class="' + t.pageClass + '" style="' + t.pageStyle + '">',
+             (isEn ? t.htmlEn : t.htmlFr),
+    '    </div>',
+    '  </div>',
+    '</div>'
+  ].join('')).join('');
+}
+
 function renderHomeGallery(lang = currentLanguage) {
   const gallery = document.querySelector('.reference-gallery');
   if (!gallery || !window.TEMPLATES_DATA) return;
@@ -1172,6 +1191,7 @@ function renderHomeGallery(lang = currentLanguage) {
     btn.addEventListener('click', () => showChooser(btn.dataset.template));
   });
 
+  renderHeroCvStack(lang);
   requestAnimationFrame(updateThumbScales);
 }
 
