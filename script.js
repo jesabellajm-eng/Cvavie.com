@@ -650,30 +650,49 @@ $('#downloadBtn').addEventListener('click', () => {
   exportPDF();
 });
 
-async function exportPDF() {
-  if (typeof html2pdf === 'undefined') return showToast('Le générateur PDF est encore en chargement. Réessayez.');
-  const resume = $('#resumePreview');
-  const previousTransform = resume.style.transform;
-  resume.style.transform = 'none';
-  document.body.classList.add('exporting');
-  const filename = `${(data.fullName || 'mon-cv').trim().replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '-').replace(/^-|-$/g, '')}-CV.pdf`;
-  const options = {
-    margin: 0, filename,
-    image: { type: 'jpeg', quality: .98 },
-    html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    pagebreak: { mode: ['avoid-all', 'css', 'legacy'], avoid: ['.resume-item', '.resume-section'] }
-  };
-  try { 
-    showToast(currentLanguage === 'en' ? 'Generating your PDF…' : 'Génération du PDF en cours…');
-    await html2pdf().set(options).from(resume).save();
-    showToast(currentLanguage === 'en' ? '✓ PDF downloaded!' : '✓ PDF téléchargé avec succès !');
-  } catch { 
-    showToast('Impossible de générer le PDF. Veuillez réessayer.'); 
-  } finally { 
-    resume.style.transform = previousTransform; 
-    document.body.classList.remove('exporting'); 
+/*
+ * EXPORT PDF TEXTE RÉEL (100 % compatible ATS)
+ * Ouvre une fenêtre d'impression dédiée contenant le CV en HTML texte.
+ * L'utilisateur choisit « Enregistrer en PDF » : le texte reste sélectionnable
+ * et lisible par les logiciels de tri (ATS), contrairement à un PDF-image.
+ */
+function exportPDF() {
+  const sheet = document.querySelector('#resumePreview .resume-sheet');
+  const isEn = currentLanguage === 'en';
+  if (!sheet) return showToast(isEn ? 'Nothing to export yet.' : 'Rien à exporter pour le moment.');
+
+  const filename = `${(data.fullName || 'mon-cv').trim().replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '-').replace(/^-|-$/g, '')}-CV`;
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    return showToast(isEn
+      ? 'Please allow pop-ups to export your PDF.'
+      : 'Veuillez autoriser les fenêtres pop-up pour exporter votre PDF.');
   }
+
+  const doc = [
+    '<!DOCTYPE html><html lang="' + currentLanguage + '"><head><meta charset="utf-8">',
+    '<title>' + filename + '</title>',
+    '<link rel="preconnect" href="https://fonts.googleapis.com">',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">',
+    '<style>',
+    '@page{size:letter;margin:0}',
+    '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    'html,body{margin:0;padding:0;background:#fff}',
+    '.resume-sheet{width:8.5in!important;min-height:11in!important;margin:0 auto!important;box-shadow:none!important}',
+    '</style></head><body>',
+    sheet.outerHTML,
+    '<scr' + 'ipt>window.addEventListener("load",function(){setTimeout(function(){window.print()},450)})</scr' + 'ipt>',
+    '</body></html>'
+  ].join('\n');
+
+  printWindow.document.open();
+  printWindow.document.write(doc);
+  printWindow.document.close();
+
+  showToast(isEn
+    ? '✓ Dans la fenêtre d’impression, choisissez « Save as PDF ».'
+    : '✓ Dans la fenêtre d’impression, choisissez « Enregistrer en PDF ».');
 }
 
 /*
