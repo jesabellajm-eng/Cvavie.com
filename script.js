@@ -904,7 +904,7 @@ const FR_EN = {
   'Rédigez-le':'Write it','Remplissez vos informations et voyez votre CV prendre forme instantanément.':'Enter your information and watch your resume take shape instantly.',
   'Payez une fois':'Pay once','Débloquez les téléchargements avec un paiement unique de 23,99 $.':'Unlock downloads with a one-time $23.99 payment.',
   'Gardez-le à vie':'Keep it for life','Revenez, adaptez et téléchargez votre CV autant de fois que nécessaire.':'Return, update and download your resume whenever you need.',
-  'Le calcul est simple':'The math is simple','Payez une fois,':'Pay once,','ou payez chaque mois.':'or pay every month.','La concurrence facture une nouvelle fois le mois suivant. Nous, non.':'Other builders charge you again next month. We do not.',
+  'Le calcul est simple':'The math is simple','Un seul paiement.':'One payment.','Zéro abonnement.':'Zero subscription.','La concurrence facture une nouvelle fois le mois suivant. Nous, non.':'Other builders charge you again next month. We do not.',
   'Abonnement classique':'Typical subscription','Prix':'Price','23,99 $ une fois':'$23.99 once','15–30 $/mois':'$15–30/month','Année suivante':'Next year','0 $':'$0','180–360 $':'$180–360',
   'Modifications':'Edits','Illimitées':'Unlimited','Tant que vous payez':'While you keep paying','Compte obligatoire':'Account required','Non':'No','Souvent':'Often','Économie potentielle après un an :':'Potential savings after one year:','jusqu’à 336 $':'up to $336',
   'Tout est inclus':'Everything included','Un accès à vie comprend :':'Lifetime access includes:','Tout ce qu’il faut pour créer, adapter et envoyer votre candidature.':'Everything you need to create, tailor and send your application.',
