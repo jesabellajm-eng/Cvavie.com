@@ -1339,260 +1339,11 @@ section, .section, .faq, .comparison, .features, .templates, .final-cta {
 }
 
 
-/* ==========================================================================
-   CVAVIE.COM — BULLETPROOF RESPONSIVE FAQ, FINAL-CTA & FOOTER (NO OVERLAP)
-   ========================================================================== */
-
-/* 1. FAQ SECTION — Clean centered layout, NEVER STICKY ON ANY SCREEN */
-.faq.section, section#faq {
-  background: #ffffff !important;
-  padding: 80px clamp(20px, 6vw, 100px) !important;
-  display: block !important;
-  max-width: 1040px !important;
-  margin: 0 auto !important;
-  box-sizing: border-box !important;
-  position: relative !important;
-}
-
-.faq-intro {
-  position: static !important;
-  top: auto !important;
-  text-align: center !important;
-  max-width: 760px !important;
-  margin: 0 auto 48px auto !important;
-  display: block !important;
-}
-
-.faq-intro .faq-badge-top {
-  display: inline-block !important;
-  background: #f1f5f9 !important;
-  color: #c1154e !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.12em !important;
-  padding: 5px 14px !important;
-  border-radius: 20px !important;
-  margin-bottom: 12px !important;
-  border: 1px solid #e2e8f0 !important;
-}
-
-.faq-intro .kicker {
-  margin: 0 0 10px 0 !important;
-}
-
-.faq-intro h2 {
-  font-family: var(--serif, 'Playfair Display', Georgia, serif) !important;
-  font-size: clamp(28px, 4.2vw, 42px) !important;
-  color: #7e1b3b !important;
-  margin: 6px 0 14px 0 !important;
-  line-height: 1.2 !important;
-}
-
-.faq-intro p:not(.kicker) {
-  font-size: 15px !important;
-  color: #c1154e !important;
-  line-height: 1.6 !important;
-  margin: 0 auto !important;
-  max-width: 620px !important;
-}
-
-.faq-help-card {
-  display: none !important;
-}
-
-/* 2. FAQ CARDS — Individual clean distinct cards with borders and shadows */
-.faq-list {
-  max-width: 860px !important;
-  margin: 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 16px !important;
-  border: 0 !important;
-}
-
-.faq-list details {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
-  box-shadow: 0 2px 6px rgba(186, 21, 75, 0.04) !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
-  margin: 0 !important;
-}
-
-.faq-list details:hover {
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 6px 16px rgba(186, 21, 75, 0.07) !important;
-}
-
-.faq-list details[open] {
-  background: #ffffff !important;
-  border-color: var(--gold, #eaeaea) !important;
-  box-shadow: 0 8px 24px rgba(234, 234, 234, 0.14) !important;
-}
-
-.faq-list summary {
-  padding: 20px 24px !important;
-  cursor: pointer !important;
-  list-style: none !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  gap: 18px !important;
-  user-select: none !important;
-  background: transparent !important;
-}
-
-.faq-list summary::-webkit-details-marker {
-  display: none !important;
-}
-
-.faq-list .summary-text {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-  align-items: flex-start !important;
-  text-align: left !important;
-  flex: 1 !important;
-}
-
-.faq-cat-tag {
-  font-size: 9.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  padding: 3px 8px !important;
-  border-radius: 4px !important;
-  text-transform: uppercase !important;
-  display: inline-block !important;
-  line-height: 1.2 !important;
-}
-
-.summary-title {
-  font-family: var(--sans, Inter, sans-serif) !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: #b31448 !important;
-  line-height: 1.45 !important;
-}
-
-.faq-icon {
-  width: 30px !important;
-  height: 30px !important;
-  border-radius: 50% !important;
-  border: 1px solid #cbd5e1 !important;
-  display: grid !important;
-  place-items: center !important;
-  font-size: 18px !important;
-  color: #c1154e !important;
-  flex-shrink: 0 !important;
-  transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease !important;
-}
-
-.faq-list details[open] .faq-icon {
-  transform: rotate(45deg) !important;
-  background: var(--navy, #7e1b3b) !important;
-  color: #ffffff !important;
-  border-color: var(--navy, #7e1b3b) !important;
-}
-
-.faq-answer {
-  padding: 0 24px 22px 24px !important;
-  border-top: 1px solid #f1f5f9 !important;
-  margin-top: 4px !important;
-  padding-top: 16px !important;
-  background: transparent !important;
-}
-
-.faq-answer p {
-  font-size: 14.5px !important;
-  line-height: 1.7 !important;
-  color: #c1154e !important;
-  margin: 0 0 10px 0 !important;
-}
-
-.faq-answer p:last-child {
-  margin-bottom: 0 !important;
-}
-
-.faq-answer strong {
-  color: #b31448 !important;
-  font-weight: 600 !important;
-}
-
-/* 3. FINAL CTA — Clean horizontal card with price box */
-.final-cta {
-  background: var(--cream, #f7f5f0) !important;
-  border-top: 1px solid #e2e8f0 !important;
-  border-bottom: 1px solid #e2e8f0 !important;
-  padding: 70px clamp(20px, 6vw, 100px) !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  gap: 40px !important;
-  flex-wrap: wrap !important;
-  box-sizing: border-box !important;
-}
-
-.final-cta > div:first-child {
-  max-width: 600px !important;
-  flex: 1 1 320px !important;
-}
-
-.final-cta h2 {
-  font: 600 clamp(30px, 4.2vw, 44px)/1.15 var(--serif, 'Playfair Display', Georgia, serif) !important;
-  color: #7e1b3b !important;
-  margin: 12px 0 16px 0 !important;
-}
-
-.final-cta p {
-  color: #c1154e !important;
-  font-size: 15px !important;
-  line-height: 1.6 !important;
-  margin: 0 0 24px 0 !important;
-}
-
-.cta-card {
-  background: #7e1b3b !important;
-  color: #ffffff !important;
-  padding: 28px 32px !important;
-  border-radius: 14px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-  min-width: 250px !important;
-  box-shadow: 0 12px 28px rgba(186, 21, 75, 0.16) !important;
-  flex: 0 0 auto !important;
-}
-
-.cta-card span {
-  font-family: var(--serif, 'Playfair Display', Georgia, serif) !important;
-  font-size: 20px !important;
-  font-weight: 700 !important;
-  color: var(--gold, #eaeaea) !important;
-  display: block !important;
-  margin-bottom: 2px !important;
-}
-
-.cta-card strong {
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  color: #ffffff !important;
-  display: block !important;
-}
-
-.cta-card small {
-  font-size: 12px !important;
-  color: #94a3b8 !important;
-  margin-top: 6px !important;
-  display: block !important;
-  border-top: 1px solid #c1154e !important;
-  padding-top: 10px !important;
-}
-
 /* 4. FOOTER — Clean multi-column grid with clear vertical links */
 footer {
-  background: #8c1038 !important;
-  color: #94a3b8 !important;
+  background: #0B0D14 !important;
+  border-top: 1px solid #1B2230 !important;
+  color: #8B93A7 !important;
   padding: 60px clamp(20px, 6vw, 100px) 36px !important;
   display: grid !important;
   grid-template-columns: 2fr 1fr 1fr 1fr !important;
@@ -1642,7 +1393,7 @@ footer div a:hover {
 }
 
 footer p {
-  color: #c1154e !important;
+  color: #64748B !important;
   font-size: 13px !important;
   line-height: 1.5 !important;
   margin: 6px 0 0 0 !important;
@@ -1650,10 +1401,10 @@ footer p {
 
 footer small {
   grid-column: 1 / -1 !important;
-  border-top: 1px solid #c1154e !important;
+  border-top: 1px solid #1B2230 !important;
   padding-top: 24px !important;
   margin-top: 20px !important;
-  color: #c1154e !important;
+  color: #64748B !important;
   font-size: 12px !important;
   text-align: center !important;
   display: block !important;
@@ -2622,11 +2373,6 @@ img, picture, svg { max-width: 100%; }
 }
 
 /* Alternance des fonds : rythme visuel */
-#landingView .why-choose-section{background:var(--ivory);}
-#landingView .steps.section{background:#fff;}
-#landingView .section.features{background:var(--ivory);}
-#landingView .templates.section{background:#fff;}
-#landingView .faq.section{background:var(--ivory);}
 
 /* ---------- 2. SECTION IA : prolongement sombre du héro ---------- */
 #landingView .ai-showcase-section{
@@ -3004,84 +2750,6 @@ img, picture, svg { max-width: 100%; }
 #landingView .author-info strong{display:block;font:600 13px/1.3 var(--sans);color:#eef2f8;}
 #landingView .author-info span{font:400 11.5px/1.4 var(--sans);color:#8494aa;}
 
-/* ---------- 9. FAQ (surcharge des règles !important existantes) ---------- */
-#landingView .faq.section{
-  background:var(--ivory) !important;
-  border-top:1px solid rgba(234, 234, 234,.18) !important;
-}
-#landingView .faq-intro{
-  background:transparent !important;border:0 !important;box-shadow:none !important;
-  max-width:900px !important;margin:0 auto !important;text-align:center !important;padding:0 !important;
-}
-#landingView .faq-intro .faq-badge-top{
-  display:inline-block !important;
-  background:rgba(234, 234, 234,.14) !important;
-  border:1px solid rgba(234, 234, 234,.45) !important;
-  color:#e0e0e0 !important;
-  font:700 9.5px/1 var(--sans) !important;
-  letter-spacing:.15em !important;text-transform:uppercase !important;
-  padding:7px 14px !important;border-radius:999px !important;margin:0 0 16px !important;
-}
-#landingView .faq-intro .kicker{
-  color:#e2e2e2 !important;font:700 9.5px/1 var(--sans) !important;
-  letter-spacing:.22em !important;text-transform:uppercase !important;margin:0 0 14px !important;
-}
-#landingView .faq-intro h2{
-  font:500 clamp(30px,3.5vw,48px)/1.08 var(--serif) !important;
-  letter-spacing:-.03em !important;color:#c1154e !important;margin:0 0 16px !important;
-}
-#landingView .faq-intro p:not(.kicker){
-  font:400 clamp(14px,1.15vw,16.5px)/1.7 var(--sans) !important;
-  color:var(--muted-light) !important;max-width:62ch !important;margin:0 auto !important;
-}
-#landingView .faq-list{
-  max-width:900px !important;margin:clamp(34px,4vw,50px) auto 0 !important;
-  display:grid !important;gap:12px !important;
-}
-#landingView .faq-list details{
-  background:#fff !important;border:1px solid var(--line-light) !important;
-  border-radius:4px !important;padding:0 !important;overflow:hidden !important;
-  box-shadow:none !important;transition:border-color .22s ease,box-shadow .22s ease !important;
-}
-#landingView .faq-list details:hover{border-color:rgba(234, 234, 234,.45) !important;}
-#landingView .faq-list details[open]{
-  border-color:rgba(234, 234, 234,.6) !important;
-  box-shadow:0 20px 44px -30px rgba(186, 21, 75,.34) !important;
-}
-#landingView .faq-list summary{
-  list-style:none !important;cursor:pointer !important;
-  display:flex !important;align-items:center !important;gap:14px !important;
-  padding:19px 22px !important;background:transparent !important;border:0 !important;
-}
-#landingView .faq-list summary::-webkit-details-marker{display:none !important;}
-#landingView .faq-cat-tag,
-#landingView .faq-icon{
-  flex:0 0 auto !important;
-  font:700 9px/1 var(--sans) !important;letter-spacing:.1em !important;text-transform:uppercase !important;
-  color:#e0e0e0 !important;background:rgba(234, 234, 234,.13) !important;
-  border:1px solid rgba(234, 234, 234,.32) !important;border-radius:999px !important;
-  padding:6px 11px !important;
-}
-#landingView .faq-list details[open] .faq-icon,
-#landingView .faq-list details[open] .faq-cat-tag{
-  background:rgba(234, 234, 234,.24) !important;color:#dddddd !important;
-}
-#landingView .faq-list .summary-text{
-  flex:1 !important;font:500 15.5px/1.45 var(--serif) !important;
-  color:#c1154e !important;letter-spacing:-.012em !important;
-}
-#landingView .faq-answer{
-  padding:0 22px 22px !important;background:transparent !important;border:0 !important;
-}
-#landingView .faq-answer p{
-  font:400 13.8px/1.78 var(--sans) !important;color:var(--muted-light) !important;margin:0 0 12px !important;
-}
-#landingView .faq-answer p:last-child{margin-bottom:0 !important;}
-#landingView .faq-answer strong{color:#c1154e !important;font-weight:600 !important;}
-/* La carte de contact était masquée par les règles d'origine : on la garde
-   masquée pour ne pas couper le flux des questions. */
-#landingView .faq-help-card{display:none !important;}
-
 /* ---------- 10. APPEL À L'ACTION FINAL ---------- */
 #landingView .final-cta{
   position:relative !important;isolation:isolate !important;
@@ -3117,13 +2785,6 @@ img, picture, svg { max-width: 100%; }
   font:400 clamp(14px,1.15vw,16px)/1.7 var(--sans) !important;
   color:var(--muted-dark) !important;margin:0 0 30px !important;max-width:50ch !important;
 }
-#landingView .final-cta .gold-btn{
-  border-radius:999px !important;padding:17px 34px !important;
-  font:600 14px/1 var(--sans) !important;
-  background:var(--gold-grad) !important;color:#c1154e !important;border:0 !important;
-  box-shadow:0 16px 40px rgba(234, 234, 234,.3) !important;
-}
-#landingView .final-cta .gold-btn:hover{transform:translateY(-2px);}
 #landingView .final-cta .cta-card{
   flex:0 1 320px !important;
   display:flex !important;flex-direction:column !important;gap:6px !important;
@@ -3146,23 +2807,6 @@ img, picture, svg { max-width: 100%; }
   border-top:1px solid rgba(255, 255, 255,.12) !important;
   font:400 11.5px/1.5 var(--sans) !important;color:#93a3b8 !important;
 }
-
-/* ---------- 11. PIED DE PAGE ---------- */
-#landingView footer{
-  background:#7b0e32 !important;
-  border-top:1px solid rgba(234, 234, 234,.16) !important;
-}
-#landingView footer .site-brand{
-  font:600 21px/1 var(--serif) !important;color:#fff !important;text-decoration:none !important;
-}
-#landingView footer .site-brand .brand-cv{color:#fff !important;}
-#landingView footer .site-brand .brand-avie{color:var(--gold) !important;}
-#landingView footer .site-brand .brand-tld{color:#8494aa !important;}
-#landingView footer div strong{
-  color:#c3cedd !important;font-size:9.5px !important;letter-spacing:.16em !important;
-}
-#landingView footer div a:hover{color:var(--gold) !important;}
-#landingView footer small{border-top-color:rgba(255, 255, 255,.08) !important;}
 
 /* ---------- 12. EN-TÊTES APPLICATIFS (choix & rédaction) ---------- */
 .app-header{
@@ -4432,3 +4076,277 @@ footer a,footer p,footer small{color:var(--ds-muted)!important}footer strong{col
   box-shadow:0 18px 42px rgba(196,181,253,.48)!important;filter:none!important;
 }
 .cta-mauve-btn:active{transform:translateY(0)!important}
+
+/* ============================================================
+   PRESTIGE GLOBAL — tout le site en style Semrush sombre
+   Fond noir conservé, blocs interactifs au survol/défilement
+   ============================================================ */
+
+body{background:#090B10;color:#E2E8F0}
+
+/* --- Titres de section : blancs, gras, sans-serif --- */
+.section h2,.comparison h2,.final-cta h2,.templates-head h2,.section-heading h2,
+.faq-intro h2,.testimonials-head h2{
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif!important;
+  font-weight:800!important;color:#FFFFFF!important;letter-spacing:-.03em!important;
+  line-height:1.06!important;font-style:normal!important;
+}
+.section .kicker,.comparison .kicker,.final-cta .kicker,.templates .kicker,
+.faq .kicker,.testimonials-section .kicker,.section-heading .kicker{
+  color:#A78BFA!important;font-weight:700;
+}
+.section .kicker:before,.comparison .kicker:before,.final-cta .kicker:before,
+.templates .kicker:before,.faq .kicker:before,.testimonials-section .kicker:before{color:#7C3AED}
+.section-head>p:last-child,.templates-head p,.faq-intro>p:last-child,.section-lead,
+.comparison-copy>p:last-child{color:#94A3B8!important}
+
+/* --- Fonds de sections : noir unifié --- */
+.features,.templates,.faq.section,.why-choose-section,.testimonials-section,
+.ai-showcase-section,.steps{background:transparent!important}
+#landingView .section{border-top:1px solid #151B28}
+
+/* --- Cartes : panneaux élevés interactifs --- */
+.step-card,.features article,.why-choose-card,.testimonial-card,.faq-list details{
+  background:#131722!important;border:1px solid #232D3F!important;border-radius:16px!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.28);
+  transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s!important;
+}
+.step-card:hover,.features article:hover,.why-choose-card:hover,
+.testimonial-card:hover,.faq-list details:hover{
+  transform:translateY(-6px);
+  border-color:rgba(167,139,250,.55)!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 30px rgba(157,78,221,.14);
+}
+.step-card h3,.features h3,.why-choose-card h3{
+  font-family:'Inter','Plus Jakarta Sans',sans-serif!important;color:#F1F5F9!important;
+}
+.step-card p,.features article p,.why-choose-card p,.why-choose-card li,
+.testimonial-quote,.faq-answer,.faq-answer p{color:#94A3B8!important}
+.features article b,.step-card span{
+  background:rgba(157,78,221,.18)!important;color:#C4B5FD!important;
+  border:1px solid rgba(167,139,250,.35);border-radius:10px!important;
+  transition:transform .3s,background .3s;
+}
+.step-card:hover span,.features article:hover b{
+  background:rgba(157,78,221,.32)!important;transform:scale(1.1) rotate(-4deg);
+}
+
+/* --- Témoignages --- */
+.testimonial-stars{color:#C4B5FD!important}
+.testimonial-badge{background:rgba(157,78,221,.18)!important;color:#C4B5FD!important;
+  border:1px solid rgba(167,139,250,.35)!important}
+.author-info strong,.testimonial-author strong{color:#E2E8F0!important}
+.author-info span,.testimonial-author span{color:#64748B!important}
+
+/* --- FAQ sombre --- */
+.faq-list summary{color:#E2E8F0!important}
+.faq-list summary:hover{color:#C4B5FD!important}
+.faq-icon{color:#A78BFA!important;border-color:#232D3F!important}
+.faq-list details[open]{border-color:rgba(167,139,250,.5)!important}
+.faq-answer strong{color:#C4B5FD!important}
+
+/* --- Comparaison prix : sombre + bloc stat style Semrush --- */
+.comparison{
+  background:linear-gradient(160deg,rgba(157,78,221,.10) 0%,rgba(157,78,221,0) 45%),#0B0D14!important;
+  color:#E2E8F0;border-top:1px solid #151B28;border-bottom:1px solid #151B28;
+}
+.comparison h2{color:#FFFFFF!important}
+.price-table{border:1px solid #232D3F!important;border-radius:16px;overflow:hidden;
+  background:#0F131D;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.price-row{border-bottom:1px solid #232D3F!important;transition:background .25s}
+.price-row:last-of-type{border-bottom:0!important}
+.price-row:not(.header):hover{background:rgba(157,78,221,.07)}
+.price-row>*{padding:16px 20px!important;font-size:12.5px!important}
+.price-row span{color:#8B93A7!important}
+.price-row strong{color:#E9D5FF!important;border-left:1px solid #232D3F!important}
+.price-row em{color:#64748B!important;border-left:1px solid #232D3F!important}
+.price-row.header{background:#131722!important}
+.saving-note{color:#8B93A7!important}
+.saving-note b{color:#5EEAD4!important}
+
+/* Bloc stat Semrush : panneau turquoise + panneau noir, gros chiffre */
+.stat-duo{
+  grid-column:1/-1;display:flex;margin-top:54px;border-radius:20px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);min-height:190px;
+  transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s;
+}
+.stat-duo:hover{transform:translateY(-6px);box-shadow:0 40px 100px rgba(0,0,0,.65),0 0 50px rgba(45,230,168,.10)}
+.stat-accent{
+  background:linear-gradient(135deg,#5EEAD4 0%,#2DD4A8 55%,#14B8A6 100%);
+  display:grid;place-items:center;padding:44px 46px;
+}
+.stat-accent svg{width:74px;height:74px;color:#06281E;transition:transform .35s}
+.stat-duo:hover .stat-accent svg{transform:translateY(-8px) scale(1.06)}
+.stat-main{
+  background:#0B0D14;flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;
+  padding:40px 48px;border-left:1px solid #1B2230;
+}
+.stat-main strong{
+  font-family:'Inter','Plus Jakarta Sans',sans-serif;font-weight:800;
+  font-size:clamp(58px,7vw,100px);letter-spacing:-.045em;line-height:.95;color:#FFFFFF;
+}
+.stat-main span{color:#94A3B8;font-size:15.5px;line-height:1.5}
+
+/* --- Galerie de modèles : feuilles blanches sur noir, survol vivant --- */
+.templates-head h2{color:#FFFFFF!important}
+.template-thumb>strong{color:#E2E8F0!important}
+.template-thumb>small{color:#64748B!important}
+.reference-gallery .template-thumb{
+  background:#131722!important;border:1px solid #232D3F!important;border-radius:14px!important;
+  transition:transform .25s,border-color .25s,box-shadow .25s!important;
+}
+.reference-gallery .template-thumb:hover{
+  transform:translateY(-6px) scale(1.015)!important;
+  border-color:rgba(167,139,250,.55)!important;
+  box-shadow:0 20px 46px rgba(0,0,0,.5),0 0 34px rgba(157,78,221,.14)!important;
+}
+.color-swatch{transition:transform .2s,box-shadow .2s}
+.color-swatch:hover{transform:scale(1.25)}
+.color-swatch.active{box-shadow:0 0 0 2px #090B10,0 0 0 4px #A78BFA}
+
+/* --- Boutons dorés restants → mauve prestige --- */
+.gold-btn{
+  background:#C4B5FD!important;color:#0B0D14!important;border-radius:999px!important;
+  font-weight:800!important;box-shadow:0 10px 26px rgba(196,181,253,.3)!important;
+  transition:transform .2s,box-shadow .2s,background .2s!important;
+}
+.gold-btn:hover{background:#D9CEFF!important;transform:translateY(-2px)!important;
+  box-shadow:0 16px 34px rgba(196,181,253,.45)!important}
+
+/* --- CTA final sombre --- */
+.final-cta{background:transparent!important;border-top:1px solid #151B28}
+.final-cta h2{color:#FFFFFF!important}
+.final-cta p{color:#94A3B8!important}
+.cta-card{
+  background:#131722!important;border:1px solid #232D3F!important;border-radius:20px!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.45)!important;color:#E2E8F0;
+  transition:transform .3s,border-color .3s,box-shadow .3s;
+}
+.cta-card:hover{transform:translateY(-6px) rotate(-1deg);border-color:rgba(167,139,250,.55)!important;
+  box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 40px rgba(157,78,221,.15)!important}
+.cta-card span{color:#A78BFA!important}
+.cta-card strong{color:#FFFFFF!important}
+.cta-card small{color:#64748B!important}
+
+/* --- Révélation au défilement (interactivité scroll) --- */
+.reveal{opacity:0;transform:translateY(30px);
+  transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1)}
+.reveal.revealed{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+}
+
+@media(max-width:900px){
+  .stat-duo{flex-direction:row;min-height:150px}
+  .stat-accent{padding:30px 26px}
+  .stat-accent svg{width:52px;height:52px}
+  .stat-main{padding:28px 26px}
+}
+@media(max-width:640px){
+  .stat-duo{flex-direction:column}
+  .stat-accent{padding:26px}
+  .stat-duo:hover{transform:none}
+}
+
+/* --- FAQ prestige sombre (corrige l'override blanc section#faq) --- */
+section#faq,.faq.section{background:transparent!important;border-top:1px solid #151B28!important}
+.faq-intro .faq-badge-top{
+  background:rgba(157,78,221,.15)!important;color:#C4B5FD!important;
+  border:1px solid rgba(167,139,250,.4)!important;
+}
+.faq-intro h2{
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif!important;
+  color:#FFFFFF!important;font-weight:800!important;letter-spacing:-.03em!important;
+}
+.faq-intro p:not(.kicker){color:#94A3B8!important}
+.faq-list details{
+  background:#131722!important;border:1px solid #232D3F!important;border-radius:16px!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.28)!important;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s!important;
+}
+.faq-list details:hover{
+  border-color:rgba(167,139,250,.55)!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 30px rgba(157,78,221,.14)!important;
+  transform:translateY(-3px);
+}
+.faq-list details[open]{
+  background:#151B28!important;border-color:rgba(167,139,250,.6)!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 34px rgba(157,78,221,.16)!important;
+}
+.faq-list summary{color:#E2E8F0!important;font-weight:600}
+.faq-list summary:hover{color:#C4B5FD!important}
+.faq-answer,.faq-answer p,.faq-answer li{color:#94A3B8!important}
+.faq-answer strong{color:#C4B5FD!important}
+.faq-cat-tag{background:rgba(148,163,184,.12)!important;color:#94A3B8!important}
+.faq-cat-tag.alert{background:rgba(45,212,168,.14)!important;color:#5EEAD4!important}
+.faq-cat-tag.ai{background:rgba(157,78,221,.16)!important;color:#C4B5FD!important}
+.faq-icon{border-color:#232D3F!important;color:#A78BFA!important}
+.pricing-faq-banner{
+  background:linear-gradient(135deg,rgba(157,78,221,.16),rgba(34,211,238,.08))!important;
+  border:1px solid rgba(167,139,250,.4)!important;border-radius:18px!important;
+}
+.pricing-faq-banner .banner-content strong{color:#FFFFFF!important}
+.pricing-faq-banner .banner-content{color:#CBD5E1!important}
+
+/* --- FAQ sombre — version #landingView (bat les overrides !important existants) --- */
+#landingView .faq.section{background:transparent!important;border-top:1px solid #151B28!important}
+#landingView .faq-intro .faq-badge-top{
+  background:rgba(157,78,221,.15)!important;color:#C4B5FD!important;
+  border:1px solid rgba(167,139,250,.4)!important;
+}
+#landingView .faq-intro h2{
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif!important;
+  color:#FFFFFF!important;font-weight:800!important;letter-spacing:-.03em!important;
+  -webkit-text-fill-color:#FFFFFF!important;background:none!important;
+}
+#landingView .faq-intro p:not(.kicker){color:#94A3B8!important}
+#landingView .faq-list details{
+  background:#131722!important;border:1px solid #232D3F!important;border-radius:16px!important;
+  box-shadow:0 4px 18px rgba(0,0,0,.28)!important;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s!important;
+}
+#landingView .faq-list details:hover{
+  border-color:rgba(167,139,250,.55)!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 30px rgba(157,78,221,.14)!important;
+  transform:translateY(-3px);
+}
+#landingView .faq-list details[open]{
+  background:#151B28!important;border-color:rgba(167,139,250,.6)!important;
+  box-shadow:0 18px 44px rgba(0,0,0,.45),0 0 34px rgba(157,78,221,.16)!important;
+}
+#landingView .faq-list summary{color:#E2E8F0!important;font-weight:600}
+#landingView .faq-list summary:hover{color:#C4B5FD!important}
+#landingView .faq-answer,#landingView .faq-answer p,#landingView .faq-answer li{color:#94A3B8!important}
+#landingView .faq-answer strong{color:#C4B5FD!important}
+#landingView .faq-cat-tag{background:rgba(148,163,184,.12)!important;color:#94A3B8!important}
+#landingView .faq-cat-tag.alert{background:rgba(45,212,168,.14)!important;color:#5EEAD4!important}
+#landingView .faq-cat-tag.ai{background:rgba(157,78,221,.16)!important;color:#C4B5FD!important}
+#landingView .faq-icon{border-color:#232D3F!important;color:#A78BFA!important}
+#landingView .pricing-faq-banner{
+  background:linear-gradient(135deg,rgba(157,78,221,.16),rgba(34,211,238,.08))!important;
+  border:1px solid rgba(167,139,250,.4)!important;border-radius:18px!important;
+}
+#landingView .pricing-faq-banner .banner-content strong{color:#FFFFFF!important}
+#landingView .pricing-faq-banner .banner-content{color:#CBD5E1!important}
+
+/* --- Footer prestige sombre --- */
+footer{background:#0B0D14!important;color:#8B93A7!important;border-top:1px solid #1B2230!important}
+footer div strong{color:#C4B5FD!important}
+footer div a{color:#8B93A7!important}
+footer div a:hover{color:#E9D5FF!important}
+footer p{color:#64748B!important}
+footer small{border-top:1px solid #1B2230!important;color:#64748B!important}
+footer .site-brand .brand-cv,footer .site-brand .brand-avie{color:#C4B5FD!important}
+footer .site-brand .brand-tld{color:#7C8598!important}
+
+/* --- Bouton CTA final mauve (bat l'override #landingView existant) --- */
+#landingView .final-cta .gold-btn{
+  background:#C4B5FD!important;color:#0B0D14!important;border-radius:999px!important;
+  font:800 14px/1 'Inter','Plus Jakarta Sans',-apple-system,'Segoe UI',sans-serif!important;
+  box-shadow:0 16px 40px rgba(196,181,253,.35)!important;
+  transition:transform .2s,box-shadow .2s,background .2s!important;
+}
+#landingView .final-cta .gold-btn:hover{
+  background:#D9CEFF!important;transform:translateY(-2px)!important;
+  box-shadow:0 22px 48px rgba(196,181,253,.5)!important;
+}

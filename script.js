@@ -918,6 +918,7 @@ const FR_EN = {
   '23,99 $': '$23.99',
   'une seule fois — accès à vie, jamais d’abonnement caché sous une offre à 2 $.': 'one time only — lifetime access, never a hidden subscription behind a $2 offer.',
   'Commencer à créer': 'Start creating',
+  'd’économies dès la première année — sans rien sacrifier.': 'saved in the very first year — with nothing sacrificed.',
   'Ici, pas de piège ni d’abonnement caché. Optimisez votre contenu avec notre IA et téléchargez votre CV parfait pour seulement 23,99 $ une seule fois.': 'No traps, no hidden subscriptions. Optimize your content with our AI and download your perfect resume for just $23.99 once.',
   'Pourquoi CVavie': 'Why CVavie',
   'Pourquoi nous choisir': 'Why choose us',
@@ -1414,3 +1415,29 @@ function handleGlobalSwatchClick(e) {
   if (typeof updateStyleLabels === 'function') updateStyleLabels();
 }
 document.addEventListener('click', handleGlobalSwatchClick);
+
+/* ===== Révélation au défilement (blocs interactifs au scroll) ===== */
+(function () {
+  const targets = document.querySelectorAll(
+    '#landingView .section-head, #landingView .section-heading, #landingView .templates-head, ' +
+    '#landingView .testimonials-head, #landingView .faq-intro, #landingView .ai-showcase-card, ' +
+    '#landingView .step-card, #landingView .features article, #landingView .why-choose-card, ' +
+    '#landingView .testimonial-card, #landingView .template-thumb, #landingView .faq-list details, ' +
+    '#landingView .price-table, #landingView .stat-duo, #landingView .comparison-copy, #landingView .cta-card'
+  );
+  if (!('IntersectionObserver' in window) || !targets.length) {
+    targets.forEach(el => el.classList.add('revealed'));
+    return;
+  }
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  targets.forEach(el => {
+    el.classList.add('reveal');
+    const siblings = el.parentElement ? [...el.parentElement.children].filter(c => c.classList && c.classList.contains(el.classList[0])).indexOf(el) : 0;
+    el.style.transitionDelay = Math.max(0, siblings) * 70 + 'ms';
+    io.observe(el);
+  });
+})();
