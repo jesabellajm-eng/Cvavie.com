@@ -114,6 +114,7 @@ function experienceCard(item, index) {
       <label class="field wide">
         <span>Réalisations</span>
         <textarea data-key="description" rows="4" placeholder="Décrivez vos responsabilités et résultats…">${escapeHTML(item.description)}</textarea>
+        <small class="coach-hint">✦ Écris tes idées simplement — le coach IA les transforme en réalisations percutantes.</small>
         <div class="field-actions">
           <button type="button" class="btn-ai-optimize" data-target="experience" data-index="${index}">✦ Optimiser le texte par IA</button>
         </div>
@@ -129,7 +130,12 @@ function educationCard(item, index) {
       <label class="field"><span>Établissement</span><input data-key="school" value="${escapeHTML(item.school)}" placeholder="École / Université"></label>
       <label class="field"><span>Début</span><input data-key="start" value="${escapeHTML(item.start)}" placeholder="2018"></label>
       <label class="field"><span>Fin</span><input data-key="end" value="${escapeHTML(item.end)}" placeholder="2021"></label>
-      <label class="field wide"><span>Détails</span><textarea data-key="description" rows="3" placeholder="Spécialisation, distinction…">${escapeHTML(item.description)}</textarea></label>
+      <label class="field wide"><span>Détails</span><textarea data-key="description" rows="3" placeholder="Spécialisation, distinction…">${escapeHTML(item.description)}</textarea>
+        <small class="coach-hint">✦ Écris tes idées simplement — le coach IA les transforme en réalisations percutantes.</small>
+        <div class="field-actions">
+          <button type="button" class="btn-ai-optimize" data-target="education" data-index="${index}">✦ Optimiser le texte par IA</button>
+        </div>
+      </label>
     </div></div>`;
 }
 
@@ -784,6 +790,13 @@ function localAiOptimizer(text, type) {
       .replace(/^./, c => c.toUpperCase());
   }
 
+  if (type === 'education') {
+    // Reformulation sobre pour les détails de formation : une puce nette par ligne, sans verbes corporate
+    return lines
+      .map(l => `• ${l.replace(/^./, c => c.toUpperCase())}`)
+      .join('\n');
+  }
+
   const corporateVerbs = [
     'Pilotage stratégique et optimisation',
     'Conception, déploiement et suivi',
@@ -835,6 +848,19 @@ document.addEventListener('click', async e => {
         renderPreview();
         scheduleSave();
         showToast(currentLanguage === 'en' ? '✦ Experience optimized by AI!' : '✦ Réalisations optimisées par IA !');
+      }
+    } else if (target === 'education') {
+      const index = Number(btn.dataset.index);
+      const card = btn.closest('.repeat-card');
+      const textarea = card.querySelector('textarea[data-key="description"]');
+      const text = textarea.value;
+      const optimized = await optimizeWithAI(text, 'education');
+      if (optimized) {
+        textarea.value = optimized;
+        data.education[index].description = optimized;
+        renderPreview();
+        scheduleSave();
+        showToast(currentLanguage === 'en' ? '✦ Education details optimized by AI!' : '✦ Détails de formation optimisés par IA !');
       }
     }
   } catch (err) {
@@ -892,6 +918,7 @@ const FR_EN = {
   'Débloquer mon accès à vie pour 23,99 $':'Unlock lifetime access for $23.99',
   'Déjà payé ? Se connecter':'Already paid? Log in',
   '✦ Optimiser le texte par IA':'✦ AI Optimize Text',
+  '✦ Écris tes idées simplement — le coach IA les transforme en réalisations percutantes.':'✦ Just jot down your ideas — the AI coach turns them into impactful, ATS-ready achievements.',
   '✦ Optimisation en cours…':'✦ Optimizing with AI…',
   'Fonctionnement':'How it works','Avantages':'Features','Modèles':'Templates','Créer mon CV':'Create my resume',
   'Sans abonnement. Maintenant ou plus tard.':'No subscription. Not now, not later.','Payez une fois.':'Pay once.','Créez votre CV':'Build your resume','pour la vie.':'for life.',
@@ -1067,7 +1094,7 @@ const FR_EN = {
   'Chez':'At',
   ', nous refusons formellement ce modèle : un tarif unique de 23,99 $, clair, honnête et garanti à vie.':', we firmly reject that model: one clear, honest $23.99 price, guaranteed for life.',
   'L\'outil d\'optimisation par IA est 100 % gratuit et illimité':'The AI optimization tool is 100% free and unlimited',
-  'pour tout le monde directement pendant la rédaction. Sous le sommaire et sous chaque description d\'expérience de travail, vous disposez d\'un bouton « ✦ Optimiser le texte par IA ».':'for everyone, right inside the editor. Under the summary and under every work experience description, you get a "✦ Optimize text with AI" button.',
+  'pour tout le monde directement pendant la rédaction. Sous le sommaire, chaque expérience et chaque formation, vous disposez d\'un bouton « ✦ Optimiser le texte par IA ».':'for everyone, right inside the editor. Under the summary, every work experience and every education entry, you get a "✦ Optimize text with AI" button.',
   'En un clic, notre IA spécialisée en recrutement reformule vos notes en phrases corporatives d’impact, amorcées par des verbes d\'action puissants et enrichies de mots-clés stratégiques pour le marché de l\'emploi.':'In one click, our recruiting-specialized AI rewrites your notes into impactful corporate sentences, opened with powerful action verbs and enriched with strategic keywords for the job market.',
   'Oui, tous nos 8 modèles sont testés et validés ATS-Friendly.':'Yes, all 8 of our templates are tested and validated ATS-friendly.',
   'Les logiciels de suivi de candidatures (ATS) filtrent automatiquement plus de 75 % des CV avant qu\'un humain ne les lise.':'Applicant tracking systems (ATS) automatically filter out over 75% of resumes before a human ever reads them.',

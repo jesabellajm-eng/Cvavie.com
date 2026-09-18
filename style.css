@@ -1790,8 +1790,20 @@ body.builder-open {
 }
 .field input:focus, .field textarea:focus {
   outline: none;
-  border-color: #7e1b3b;
-  box-shadow: 0 0 0 2px rgba(186, 21, 75, 0.08);
+  border-color: #A29BFE;
+  box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.28), 0 0 22px rgba(157, 78, 221, 0.22);
+}
+
+/* Micro-texte « coach IA » sous les champs optimisables */
+.coach-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #A29BFE;
+  opacity: 0.92;
 }
 .field textarea {
   resize: vertical;
@@ -3703,7 +3715,7 @@ body{color-scheme:dark;overflow-x:hidden}
   box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important;
 }
 .field input:focus,.field textarea:focus,.field select:focus,.repeat-item input:focus,.repeat-item textarea:focus{
-  border-color:var(--ds-purple)!important;box-shadow:0 0 0 3px rgba(157,78,221,.18)!important;outline:none!important;
+  border-color:#A29BFE!important;box-shadow:0 0 0 3px rgba(157,78,221,.28),0 0 22px rgba(157,78,221,.22)!important;outline:none!important;
 }
 .preview-panel{background:radial-gradient(700px 520px at 50% 30%,#202637 0%,#11151F 65%,#090B10 100%)!important;border-left:1px solid var(--ds-border)!important;perspective:1800px!important}
 .preview-toolbar{border-width:0 0 1px!important;border-radius:0!important}
