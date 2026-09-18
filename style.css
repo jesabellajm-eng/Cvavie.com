@@ -1805,6 +1805,39 @@ body.builder-open {
   color: #A29BFE;
   opacity: 0.92;
 }
+
+/* Bouton Coach IA — état de chargement anti-stress avec spinner */
+.btn-ai-optimize.coach-loading {
+  opacity: 0.95;
+}
+.btn-ai-optimize.coach-loading::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: coachSpin 0.7s linear infinite;
+}
+@keyframes coachSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Notification turquoise « propulsé par le Coach » sous le champ */
+.coach-validation {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #2DD4BF;
+  animation: coachNoteIn 0.4s ease;
+}
+@keyframes coachNoteIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
 .field textarea {
   resize: vertical;
   line-height: 1.5;

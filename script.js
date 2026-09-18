@@ -741,133 +741,141 @@ function exportPDFViaPrintWindow(sheet, filename, isEn) {
 
 /*
  * ============================================================================
- * BOUTON MAGIQUE D'OPTIMISATION PAR IA (GRATUIT & ACCESSIBLE À TOUS)
+ * COACH IA — MODE SIMULATION (100 % GRATUIT, AUCUNE API PAYANTE)
  * ============================================================================
- * Prompt système :
- * "Agis comme un coach de carrière et un expert en recrutement. Prends le texte
- * fourni par l'utilisateur et réécris-le dans un langage corporatif, hautement
- * professionnel, formel et percutant pour le marché de l'emploi. Utilise des verbes
- * d'action au début des phrases. Optimise la structure pour qu'elle passe les robots
- * de tri de CV (ATS). Ne renvoie AUCUNE introduction ni conclusion, retourne UNIQUEMENT
- * le texte corrigé et prêt à être inséré."
+ * Comportement anti-stress au clic sur « ✦ Optimiser le texte par IA » :
+ * 1. Effet de chargement rassurant (spinner + message) pendant exactement 2,5 s.
+ * 2. Détection de mots-clés dans le brouillon de l'utilisateur pour injecter
+ *    une version « magique » adaptée au secteur (service/vente, gestion/bureau),
+ *    sinon une formule passe-partout de haut niveau.
+ * 3. Notification turquoise de validation injectée sous le champ.
+ * ============================================================================
  */
-async function optimizeWithAI(rawText, type = 'experience') {
-  if (!rawText || !rawText.trim()) {
-    showToast(currentLanguage === 'en' ? 'Please enter some text to optimize.' : 'Veuillez d’abord saisir du texte à optimiser.');
-    return null;
+const COACH_LOADING_MS = 2500; // Délai rassurant exact, ne pas réduire
+
+const COACH_TEMPLATES = {
+  // Secteur service / vente (mots-clés : client, téléphone, vendeur…)
+  service: {
+    fr: '• Piloté la relation client et résolu les incidents avec un taux de satisfaction de 95 %.\n• Optimisé la gestion des appels et le suivi administratif pour réduire les délais de traitement.',
+    en: '• Drove customer relationships and resolved incidents with a 95% satisfaction rate.\n• Optimized call handling and administrative follow-up to reduce processing times.'
+  },
+  // Secteur gestion / bureau (mots-clés : projet, équipe, coordonner…)
+  gestion: {
+    fr: '• Coordonné le déploiement de projets clés en respectant les échéanciers et les budgets alloués.\n• Structuré les flux de travail de l’équipe pour maximiser la productivité collective de [X] %.',
+    en: '• Coordinated the rollout of key projects while meeting timelines and allocated budgets.\n• Structured team workflows to maximize collective productivity by [X]%.'
+  },
+  // Formule passe-partout de haut niveau
+  general: {
+    fr: '• Optimisé les processus opérationnels quotidiens pour garantir un standard de qualité élevé.\n• Pris en charge les responsabilités clés du poste en faisant preuve d’autonomie et d’efficacité.',
+    en: '• Optimized daily operational processes to guarantee a high standard of quality.\n• Took ownership of the role’s key responsibilities with autonomy and efficiency.'
+  }
+};
+
+function coachLocalSimulation(rawText, type) {
+  const t = rawText.toLowerCase();
+  const lang = currentLanguage === 'en' ? 'en' : 'fr';
+
+  let key = 'general';
+  if (/(client|téléphone|telephone|vendeur|vente|customer|phone|sales)/i.test(t)) {
+    key = 'service';
+  } else if (/(projet|équipe|equipe|coordonn|project|team|coordinat)/i.test(t)) {
+    key = 'gestion';
   }
 
-  // 1. Tentative d'appel à la route API Serverless
-  try {
-    const response = await fetch('/api/optimize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: rawText, type })
-    });
+  let result = COACH_TEMPLATES[key][lang];
 
-    if (response.ok) {
-      const json = await response.json();
-      if (json.optimizedText) {
-        return json.optimizedText;
-      }
-    }
-  } catch {
-    // Si hors-ligne ou static preview, bascule sur l'optimiseur intégré
-  }
-
-  // 2. Moteur d'optimisation professionnel intégré (garantie 100% zéro blocage)
-  return localAiOptimizer(rawText, type);
-}
-
-function localAiOptimizer(text, type) {
-  const lines = text.split('\n').map(l => l.trim().replace(/^[-•*–—]\s*/, '')).filter(Boolean);
-  
+  // Pour le résumé de profil : version en phrase fluide, sans puces
   if (type === 'summary') {
-    return text
-      .replace(/\b(je suis|j'ai|je fais)\b/gi, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .replace(/^./, c => c.toUpperCase());
+    result = result
+      .split('\n')
+      .map(l => l.replace(/^•\s*/, ''))
+      .join(' ');
   }
 
-  if (type === 'education') {
-    // Reformulation sobre pour les détails de formation : une puce nette par ligne, sans verbes corporate
-    return lines
-      .map(l => `• ${l.replace(/^./, c => c.toUpperCase())}`)
-      .join('\n');
-  }
-
-  const corporateVerbs = [
-    'Pilotage stratégique et optimisation',
-    'Conception, déploiement et suivi',
-    'Coordination proactive et gouvernance',
-    'Restructuration des processus critiques',
-    'Négociation, alignement des parties prenantes et valorisation',
-    'Supervision de la performance opérationnelle'
-  ];
-
-  return lines.map((line, i) => {
-    const verb = corporateVerbs[i % corporateVerbs.length];
-    const cleaned = line.charAt(0).toLowerCase() + line.slice(1);
-    return `• ${verb} : ${cleaned}`;
-  }).join('\n');
+  return result;
 }
 
-// Gestionnaire de clics sur les boutons d'optimisation par IA
+// Notification turquoise « propulsé par le Coach » sous le champ concerné
+function showCoachValidation(textarea) {
+  const field = textarea.closest('.field') || textarea.parentElement;
+  if (!field) return;
+
+  // Une seule notification à la fois par champ
+  field.querySelectorAll('.coach-validation').forEach(n => n.remove());
+
+  const note = document.createElement('small');
+  note.className = 'coach-validation';
+  note.textContent = currentLanguage === 'en'
+    ? '✨ Your text has been propelled by the Coach! (ATS-friendly)'
+    : '✨ Votre texte a été propulsé par le Coach ! (Compatible ATS)';
+
+  const anchor = field.querySelector('.field-actions');
+  if (anchor) anchor.after(note); else textarea.after(note);
+
+  // La notification s'efface dès que l'utilisateur retouche le texte
+  textarea.addEventListener('input', () => note.remove(), { once: true });
+}
+
+// Gestionnaire de clics sur les boutons du Coach IA (simulation gratuite)
 document.addEventListener('click', async e => {
   const btn = e.target.closest('.btn-ai-optimize');
   if (!btn) return;
 
+  // Repérage du champ visé + fonction d'injection du résultat
   const target = btn.dataset.target;
+  let textarea = null;
+  let applyResult = null;
+
+  if (target === 'summary') {
+    textarea = $('#summary');
+    applyResult = v => { data.summary = v; };
+  } else if (target === 'experience' || target === 'education') {
+    const index = Number(btn.dataset.index);
+    const card = btn.closest('.repeat-card');
+    if (card) {
+      textarea = card.querySelector('textarea[data-key="description"]');
+      applyResult = v => {
+        data[target === 'experience' ? 'experiences' : 'education'][index].description = v;
+      };
+    }
+  }
+  if (!textarea || !applyResult) return; // bouton de démo statique : aucun champ lié
+
+  // Alerte douce si le brouillon est vide ou trop court
+  const raw = textarea.value.trim();
+  if (raw.length < 6) {
+    showToast(currentLanguage === 'en'
+      ? 'Write a quick draft, even in your own words, and the coach will handle the rest! 💡'
+      : 'Écrivez un petit brouillon, même avec vos mots, et le coach s’occupe du reste ! 💡');
+    textarea.focus();
+    return;
+  }
+
+  // 1. Effet de chargement anti-stress : spinner + message, exactement 2,5 secondes
   const originalText = btn.textContent;
   btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = currentLanguage === 'en' ? '✦ Optimizing with AI…' : '✦ Optimisation en cours…';
+  btn.classList.add('coach-loading');
+  btn.textContent = currentLanguage === 'en'
+    ? '☕ Relax, the coach is revamping your text...'
+    : '☕ Relaxez, le coach réactive votre texte...';
+
+  await new Promise(resolve => setTimeout(resolve, COACH_LOADING_MS));
 
   try {
-    if (target === 'summary') {
-      const textarea = $('#summary');
-      const text = textarea.value;
-      const optimized = await optimizeWithAI(text, 'summary');
-      if (optimized) {
-        textarea.value = optimized;
-        data.summary = optimized;
-        renderPreview();
-        scheduleSave();
-        showToast(currentLanguage === 'en' ? '✦ Summary optimized by AI!' : '✦ Profil optimisé par IA avec succès !');
-      }
-    } else if (target === 'experience') {
-      const index = Number(btn.dataset.index);
-      const card = btn.closest('.repeat-card');
-      const textarea = card.querySelector('textarea[data-key="description"]');
-      const text = textarea.value;
-      const optimized = await optimizeWithAI(text, 'experience');
-      if (optimized) {
-        textarea.value = optimized;
-        data.experiences[index].description = optimized;
-        renderPreview();
-        scheduleSave();
-        showToast(currentLanguage === 'en' ? '✦ Experience optimized by AI!' : '✦ Réalisations optimisées par IA !');
-      }
-    } else if (target === 'education') {
-      const index = Number(btn.dataset.index);
-      const card = btn.closest('.repeat-card');
-      const textarea = card.querySelector('textarea[data-key="description"]');
-      const text = textarea.value;
-      const optimized = await optimizeWithAI(text, 'education');
-      if (optimized) {
-        textarea.value = optimized;
-        data.education[index].description = optimized;
-        renderPreview();
-        scheduleSave();
-        showToast(currentLanguage === 'en' ? '✦ Education details optimized by AI!' : '✦ Détails de formation optimisés par IA !');
-      }
-    }
+    // 2. Simulation intelligente (détection de mots-clés, zéro API payante)
+    const optimized = coachLocalSimulation(raw, target);
+    textarea.value = optimized;
+    applyResult(optimized);
+    renderPreview();
+    scheduleSave();
+
+    // 3. Notification turquoise de validation du Coach
+    showCoachValidation(textarea);
   } catch (err) {
     showToast(currentLanguage === 'en' ? 'Error during optimization.' : 'Erreur lors de l’optimisation.');
   } finally {
     btn.disabled = false;
-    btn.classList.remove('loading');
+    btn.classList.remove('coach-loading');
     btn.textContent = originalText;
   }
 });
