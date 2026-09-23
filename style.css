@@ -132,11 +132,12 @@
 
 .client-modal h2{font-size:24px}
 .client-modal form{margin-top:18px;text-align:left}
-.client-modal-links{margin-top:14px}
+.client-modal-links{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+#clientCodeInput{text-align:center;font-size:24px;font-weight:700;letter-spacing:.4em;font-family:'Courier New',monospace}
 .auth-status-message{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.4;text-align:left}
 .auth-status-message.success{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
 .auth-status-message.error{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-.auth-status-message.info{background:#eff6ff;border:1px solid #bfdbfe;color:#c1154e}
+.auth-status-message.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
 
 /* Palette de couleurs d’accent */
 .accent-palette, .palette {

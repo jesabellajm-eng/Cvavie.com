@@ -539,6 +539,7 @@ function openClientModal() {
   if (input && !input.value) input.value = userEmail;
   const statusEl = $('#clientAuthStatus');
   if (statusEl) statusEl.hidden = true;
+  setAuthStep('email');
   clientModal.hidden = false;
   document.body.style.overflow = 'hidden';
   input?.focus();
@@ -568,9 +569,153 @@ document.addEventListener('keydown', e => {
 });
 
 /*
- * VÉRIFICATION DU PAIEMENT CLIENT (STRIPE & COMPTES CLIENTS)
- * Appel serveur vers /api/verify-payment?email=...
+ * CONNEXION CLIENT EN 2 ÉTAPES (CODE À 6 CHIFFRES PAR COURRIEL)
+ * Étape 1 : courriel → /api/send-code (envoie le code si l'accès à vie existe)
+ * Étape 2 : code → /api/verify-code (valide le code et restaure l'accès)
+ * Secours : si l'API est injoignable (ex. test local), on retombe sur l'ancienne vérification.
  */
+let authStep = 'email';
+
+function setAuthStep(step) {
+  authStep = step;
+  const isCode = step === 'code';
+  const emailInput = $('#clientEmailInput');
+  const submitBtn = $('#verifyClientBtn');
+  $('#clientCodeField').hidden = !isCode;
+  $('#resendCodeLink').hidden = !isCode;
+  $('#changeEmailLink').hidden = !isCode;
+  if (emailInput) emailInput.disabled = isCode;
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = isCode
+      ? (currentLanguage === 'en' ? 'Validate my code' : 'Valider mon code')
+      : (currentLanguage === 'en' ? 'Send my login code' : 'Envoyer mon code de connexion');
+  }
+  if (isCode) setTimeout(() => $('#clientCodeInput')?.focus(), 50);
+}
+
+function grantClientAccess(email, cvData, statusEl) {
+  userHasPaid = true;
+  localStorage.setItem('cv-studio-paid', 'true');
+  localStorage.setItem('cv-studio-email', email);
+
+  // Si le client avait un CV sauvegardé dans le cloud, on le restaure
+  if (cvData) {
+    data = { ...defaultData, ...cvData };
+    populateForm();
+  }
+
+  statusEl.className = 'auth-status-message success';
+  statusEl.textContent = currentLanguage === 'en'
+    ? `✓ Lifetime access confirmed for ${email}! PDF download unlocked.`
+    : `✓ Accès à vie confirmé pour ${email} ! Téléchargement PDF débloqué.`;
+
+  showToast(currentLanguage === 'en' ? 'Welcome back! Lifetime access active.' : 'Bon retour ! Accès à vie actif.');
+  setTimeout(() => {
+    closeClientModal();
+    setAuthStep('email');
+  }, 1600);
+}
+
+function showNoAccessFound(email, statusEl) {
+  statusEl.className = 'auth-status-message error';
+  statusEl.innerHTML = currentLanguage === 'en'
+    ? `No lifetime payment found for <strong>${escapeHTML(email)}</strong>.<br><a href="${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(email)}" target="_blank" style="color:#0f172a;text-decoration:underline;font-weight:700">Unlock lifetime access now for $23.99 →</a>`
+    : `Aucun accès à vie trouvé pour <strong>${escapeHTML(email)}</strong>.<br><a href="${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(email)}" target="_blank" style="color:#0f172a;text-decoration:underline;font-weight:700">Débloquez votre accès à vie maintenant pour 23,99 $ →</a>`;
+}
+
+async function sendLoginCode(email, statusEl, submitBtn) {
+  submitBtn.disabled = true;
+  submitBtn.textContent = currentLanguage === 'en' ? 'Sending your code…' : 'Envoi de votre code…';
+  statusEl.hidden = false;
+  statusEl.className = 'auth-status-message info';
+  statusEl.textContent = currentLanguage === 'en'
+    ? 'Checking your lifetime access, then emailing your code…'
+    : 'Vérification de votre accès à vie, puis envoi du code…';
+
+  try {
+    const res = await fetch('/api/send-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, lang: currentLanguage })
+    });
+    if (!res.ok) throw new Error('api_error');
+    const result = await res.json();
+
+    if (result.sent) {
+      setAuthStep('code');
+      statusEl.className = 'auth-status-message success';
+      statusEl.textContent = currentLanguage === 'en'
+        ? `✉ Code sent to ${email} — check your inbox (and spam folder). Valid ~20 minutes.`
+        : `✉ Code envoyé à ${email} — vérifiez votre boîte de réception (et les indésirables). Valide ~20 minutes.`;
+      return;
+    }
+
+    if (result.paid === false) {
+      showNoAccessFound(email, statusEl);
+    } else {
+      // Courriel payé mais service d'envoi indisponible
+      statusEl.className = 'auth-status-message error';
+      statusEl.textContent = currentLanguage === 'en'
+        ? 'The email service is temporarily unavailable. Please try again in a few minutes.'
+        : 'Le service d’envoi de courriel est temporairement indisponible. Réessayez dans quelques minutes.';
+    }
+    submitBtn.disabled = false;
+    submitBtn.textContent = currentLanguage === 'en' ? 'Send my login code' : 'Envoyer mon code de connexion';
+  } catch {
+    // API injoignable (ex. aperçu local sans serveur) : ancienne vérification directe
+    try {
+      const res = await fetch(`/api/verify-payment?email=${encodeURIComponent(email)}`);
+      const result = res.ok ? await res.json() : { paid: false };
+      if (result.paid) return grantClientAccess(email, result.cvData, statusEl);
+      showNoAccessFound(email, statusEl);
+    } catch {
+      if (email.toLowerCase() === (localStorage.getItem('cv-studio-email') || '').toLowerCase() && localStorage.getItem('cv-studio-paid') === 'true') {
+        return grantClientAccess(email, null, statusEl);
+      }
+      statusEl.className = 'auth-status-message error';
+      statusEl.textContent = currentLanguage === 'en' ? 'Network error during verification.' : 'Erreur réseau lors de la vérification.';
+    }
+    submitBtn.disabled = false;
+    submitBtn.textContent = currentLanguage === 'en' ? 'Send my login code' : 'Envoyer mon code de connexion';
+  }
+}
+
+async function validateLoginCode(email, code, statusEl, submitBtn) {
+  submitBtn.disabled = true;
+  submitBtn.textContent = currentLanguage === 'en' ? 'Validating…' : 'Validation…';
+  statusEl.hidden = false;
+  statusEl.className = 'auth-status-message info';
+  statusEl.textContent = currentLanguage === 'en' ? 'Checking your code…' : 'Vérification de votre code…';
+
+  try {
+    const res = await fetch('/api/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code })
+    });
+    if (!res.ok) throw new Error('api_error');
+    const result = await res.json();
+
+    if (result.ok) {
+      grantClientAccess(email, result.cvData, statusEl);
+      return;
+    }
+
+    statusEl.className = 'auth-status-message error';
+    statusEl.textContent = result.error === 'wrong_code'
+      ? (currentLanguage === 'en' ? 'Incorrect or expired code. Check the 6 digits or request a new one.' : 'Code incorrect ou expiré. Vérifiez les 6 chiffres ou demandez-en un nouveau.')
+      : (currentLanguage === 'en' ? 'Verification failed. Please try again.' : 'La vérification a échoué. Réessayez.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = currentLanguage === 'en' ? 'Validate my code' : 'Valider mon code';
+  } catch {
+    statusEl.className = 'auth-status-message error';
+    statusEl.textContent = currentLanguage === 'en' ? 'Network error during verification.' : 'Erreur réseau lors de la vérification.';
+    submitBtn.disabled = false;
+    submitBtn.textContent = currentLanguage === 'en' ? 'Validate my code' : 'Valider mon code';
+  }
+}
+
 $('#clientLoginForm')?.addEventListener('submit', async e => {
   e.preventDefault();
   const email = $('#clientEmailInput').value.trim();
@@ -584,63 +729,34 @@ $('#clientLoginForm')?.addEventListener('submit', async e => {
     return;
   }
 
-  submitBtn.disabled = true;
-  submitBtn.textContent = currentLanguage === 'en' ? 'Checking access…' : 'Vérification en cours…';
-  statusEl.hidden = false;
-  statusEl.className = 'auth-status-message info';
-  statusEl.textContent = currentLanguage === 'en' ? 'Connecting to Stripe & cloud records…' : 'Connexion à Stripe et vérification du statut…';
-
-  try {
-    // 1. Appel vers l'API serveur Vercel
-    let result = { paid: false };
-    try {
-      const res = await fetch(`/api/verify-payment?email=${encodeURIComponent(email)}`);
-      if (res.ok) {
-        result = await res.json();
-      }
-    } catch {
-      // Fallback si exécuté en local sans serveur actif
-      if (email.toLowerCase() === (localStorage.getItem('cv-studio-email') || '').toLowerCase() && localStorage.getItem('cv-studio-paid') === 'true') {
-        result = { paid: true };
-      }
-    }
-
-    if (result.paid) {
-      userHasPaid = true;
-      localStorage.setItem('cv-studio-paid', 'true');
-      localStorage.setItem('cv-studio-email', email);
-
-      // Si le client avait un CV sauvegardé dans le cloud, on le restaure
-      if (result.cvData) {
-        data = { ...defaultData, ...result.cvData };
-        populateForm();
-      }
-
-      statusEl.className = 'auth-status-message success';
-      statusEl.textContent = currentLanguage === 'en' 
-        ? `✓ Lifetime access confirmed for ${email}! PDF download unlocked.` 
-        : `✓ Accès à vie confirmé pour ${email} ! Téléchargement PDF débloqué.`;
-      
-      showToast(currentLanguage === 'en' ? 'Welcome back! Lifetime access active.' : 'Bon retour ! Accès à vie actif.');
-      setTimeout(() => {
-        closeClientModal();
-        submitBtn.disabled = false;
-        submitBtn.textContent = currentLanguage === 'en' ? 'Verify & reload my resume' : 'Vérifier & recharger mon CV';
-      }, 1600);
-    } else {
+  if (authStep === 'email') {
+    await sendLoginCode(email, statusEl, submitBtn);
+  } else {
+    const code = $('#clientCodeInput').value.trim();
+    if (!/^\d{6}$/.test(code)) {
+      statusEl.hidden = false;
       statusEl.className = 'auth-status-message error';
-      statusEl.innerHTML = currentLanguage === 'en'
-        ? `No lifetime payment found for <strong>${escapeHTML(email)}</strong>.<br><a href="${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(email)}" target="_blank" style="color:#0f172a;text-decoration:underline;font-weight:700">Unlock lifetime access now for $23.99 →</a>`
-        : `Aucun accès à vie trouvé pour <strong>${escapeHTML(email)}</strong>.<br><a href="${STRIPE_CHECKOUT_URL}?prefilled_email=${encodeURIComponent(email)}" target="_blank" style="color:#0f172a;text-decoration:underline;font-weight:700">Débloquez votre accès à vie maintenant pour 23,99 $ →</a>`;
-      submitBtn.disabled = false;
-      submitBtn.textContent = currentLanguage === 'en' ? 'Verify & reload my resume' : 'Vérifier & recharger mon CV';
+      statusEl.textContent = currentLanguage === 'en' ? 'Enter the 6-digit code from the email.' : 'Entrez le code à 6 chiffres reçu par courriel.';
+      return;
     }
-  } catch (err) {
-    statusEl.className = 'auth-status-message error';
-    statusEl.textContent = currentLanguage === 'en' ? 'Network error during verification.' : 'Erreur réseau lors de la vérification.';
-    submitBtn.disabled = false;
-    submitBtn.textContent = currentLanguage === 'en' ? 'Verify & reload my resume' : 'Vérifier & recharger mon CV';
+    await validateLoginCode(email, code, statusEl, submitBtn);
   }
+});
+
+$('#resendCodeLink')?.addEventListener('click', async () => {
+  const email = $('#clientEmailInput').value.trim();
+  const statusEl = $('#clientAuthStatus');
+  const submitBtn = $('#verifyClientBtn');
+  if (email) await sendLoginCode(email, statusEl, submitBtn);
+});
+
+$('#changeEmailLink')?.addEventListener('click', () => {
+  setAuthStep('email');
+  const statusEl = $('#clientAuthStatus');
+  if (statusEl) statusEl.hidden = true;
+  const codeInput = $('#clientCodeInput');
+  if (codeInput) codeInput.value = '';
+  $('#clientEmailInput')?.focus();
 });
 
 /*
@@ -930,13 +1046,10 @@ const FR_EN = {
 
   'Connexion / Accès client':'Client Login / Access',
   'Espace client':'Customer Portal',
-  'Connexion & recharge de CV':'Login & Resume Reload',
-  'Entrez votre adresse courriel pour vérifier votre statut « Payé_À_Vie » et recharger votre CV sauvegardé.':'Enter your email to verify your Lifetime Paid status and reload your saved resume.',
+  'Connexion sécurisée':'Secure login',
   'Adresse courriel':'Email address',
-  'Vérifier & recharger mon CV':'Verify & reload my resume',
   'Pas encore client ? Débloquer pour 23,99 $':'Not a customer yet? Unlock for $23.99',
-  'Vos données restent strictement confidentielles et synchronisées avec votre courriel.':'Your data remains strictly confidential and synced with your email.',
-  'Courriel pour votre reçu et accès à vie':'Email for your receipt and lifetime access',
+  'Courriel pour votre reçu et accès à vie':'Email for your receipt and lifetime access','Entrez le courriel utilisé lors de votre achat : nous vous enverrons un code à 6 chiffres pour réactiver votre accès à vie.':'Enter the email used for your purchase: we will email you a 6-digit code to restore your lifetime access.','Code à 6 chiffres (reçu par courriel)':'6-digit code (sent by email)','Envoyer mon code de connexion':'Send my login code','Renvoyer le code':'Resend the code','← Changer de courriel':'← Change email','Vos données restent strictement confidentielles.':'Your data remains strictly confidential.',
   'Débloquer mon accès à vie pour 23,99 $':'Unlock lifetime access for $23.99',
   'Déjà payé ? Se connecter':'Already paid? Log in',
   '✦ Optimiser le texte par IA':'✦ AI Optimize Text',
@@ -990,7 +1103,7 @@ const FR_EN = {
   "Puis-je modifier mon CV plus tard ou changer de modèle ?": "Can I edit my resume later or switch templates?",
   "Oui, autant de fois que vous le souhaitez. Vous pouvez basculer instantanément d’un modèle à l’autre en un seul clic : tous vos textes, dates et expériences restent intacts et s’adaptent immédiatement au design choisi.": "Yes, as often as you like. You can switch between all 8 designs with a single click: all your text, dates and experiences remain intact and adapt instantly to the new layout.",
   "Faut-il créer un compte ou retenir un mot de passe ?": "Do I need to create an account or remember a password?",
-  "Non. Votre progression est automatiquement sauvegardée dans votre navigateur. Votre adresse courriel sert d’identifiant sécurisé : le bouton « Connexion / Accès client » vous permet de recharger instantanément votre statut payé et votre CV depuis n’importe quel ordinateur ou tablette.": "No. Your progress is saved automatically in your browser. Your email acts as a secure ID: the “Client Login / Access” button lets you instantly reload your paid status and resume from any computer or tablet.",
+  "Non. Votre CV est sauvegardé automatiquement dans le navigateur de votre appareil. Pour votre accès payé, le bouton « Connexion / Accès client » vous envoie un code sécurisé à 6 chiffres par courriel : entrez-le et votre accès à vie est réactivé instantanément, depuis n’importe quel ordinateur ou tablette — sans jamais repayer.": "No. Your resume is saved automatically in your device's browser. For your paid access, the “Client Login / Access” button emails you a secure 6-digit code: enter it and your lifetime access is instantly restored from any computer or tablet — never pay again.",
   'Questions fréquentes':'Frequently asked questions','Des réponses honnêtes.':'Honest answers.','Ce que vous devez savoir avant de commencer.':'What you should know before you start.',
   'Est-ce vraiment un paiement unique ?':'Is this really a one-time payment?','Oui. Vous payez 23,99 $ une fois et conservez l’accès à vie, sans abonnement.':'Yes. Pay $23.99 once and keep lifetime access, with no subscription.',
   'Mon CV passera-t-il les logiciels ATS ?':'Will my resume pass ATS software?','Les huit modèles utilisent une structure lisible, des titres standards et une hiérarchie claire.':'All eight templates use a readable structure, standard headings and a clear hierarchy.',
@@ -1077,7 +1190,7 @@ const FR_EN = {
   'Sur le même appareil et le même navigateur :': 'On the same device and browser:',
   ' tout est déjà là. Votre CV et votre accès payé sont conservés automatiquement, même des mois plus tard. Vous n\'avez rien à faire.': ' everything is already there. Your resume and paid access are saved automatically, even months later. Nothing to do.',
   'Sur un nouvel appareil (nouveau téléphone, ordinateur du bureau, navigateur différent) :': 'On a new device (new phone, work computer, different browser):',
-  ' cliquez simplement sur le bouton « Connexion / Accès client » en haut du site, saisissez l\'adresse courriel de votre achat, et votre accès à vie est immédiatement restauré. Vous pouvez alors télécharger de nouveau votre PDF sans repayer.': ' simply click the "Sign in / Customer access" button at the top of the site, enter the email address from your purchase, and your lifetime access is restored instantly. You can then download your PDF again without paying twice.',
+  ' cliquez sur « Connexion / Accès client » en haut du site, saisissez le courriel de votre achat, puis le code à 6 chiffres reçu par courriel : votre accès à vie est immédiatement restauré et vous pouvez retélécharger votre PDF sans repayer.': ' click "Client Login / Access" at the top of the site, enter your purchase email, then the 6-digit code sent to your inbox: your lifetime access is instantly restored and you can download your PDF again without paying twice.',
   'Un conseil pratique : conservez le courriel de confirmation envoyé par Stripe après votre paiement, il vous rappelle l’adresse exacte à utiliser. Et par prudence, gardez toujours une copie du PDF téléchargé dans vos courriels ou votre espace de stockage personnel.': 'A practical tip: keep the confirmation email Stripe sends after your payment — it reminds you of the exact address to use. And to be safe, always keep a copy of your downloaded PDF in your email or personal storage.',
   'Le créateur de CV par IA': 'The AI resume builder',
   'que vous ne payez qu’une seule fois.': 'you only pay for once.',

@@ -642,20 +642,26 @@
       <button class="modal-close" id="closeClientModal" type="button">×</button>
       <div class="modal-icon">👤</div>
       <p class="eyebrow">Espace client</p>
-      <h2>Connexion & recharge de CV</h2>
-      <p>Entrez votre adresse courriel pour vérifier votre statut « Payé_À_Vie » et recharger votre CV sauvegardé.</p>
+      <h2>Connexion sécurisée</h2>
+      <p>Entrez le courriel utilisé lors de votre achat : nous vous enverrons un code à 6 chiffres pour réactiver votre accès à vie.</p>
       <form id="clientLoginForm">
-        <label class="field full">
+        <label class="field full" id="clientEmailField">
           <span>Adresse courriel</span>
           <input type="email" id="clientEmailInput" placeholder="nom@exemple.com" required>
         </label>
-        <button class="btn btn-primary btn-wide" id="verifyClientBtn" type="submit">Vérifier & recharger mon CV</button>
+        <label class="field full" id="clientCodeField" hidden>
+          <span>Code à 6 chiffres (reçu par courriel)</span>
+          <input type="text" id="clientCodeInput" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+        </label>
+        <button class="btn btn-primary btn-wide" id="verifyClientBtn" type="submit">Envoyer mon code de connexion</button>
         <div id="clientAuthStatus" class="auth-status-message" hidden></div>
       </form>
       <div class="client-modal-links">
+        <button class="modal-secondary" id="resendCodeLink" type="button" hidden>Renvoyer le code</button>
+        <button class="modal-secondary" id="changeEmailLink" type="button" hidden>← Changer de courriel</button>
         <button class="modal-secondary" id="clientOpenCheckout" type="button">Pas encore client ? Débloquer pour 23,99 $</button>
       </div>
-      <small>Vos données restent strictement confidentielles et synchronisées avec votre courriel.</small>
+      <small>Vos données restent strictement confidentielles.</small>
     </section>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
