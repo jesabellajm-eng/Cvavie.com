@@ -862,8 +862,22 @@ document.addEventListener('click', async e => {
   await new Promise(resolve => setTimeout(resolve, COACH_LOADING_MS));
 
   try {
-    // 2. Simulation intelligente (détection de mots-clés, zéro API payante)
-    const optimized = coachLocalSimulation(raw, target);
+    // 2. Vraie IA via /api/optimize (Gemini gratuit) — simulation locale en secours
+    let optimized = null;
+    try {
+      const res = await fetch('/api/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: raw, type: target })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.success && !json.isFallback && json.optimizedText) {
+          optimized = String(json.optimizedText).trim();
+        }
+      }
+    } catch (apiErr) { /* API indisponible : on reste sur la simulation locale */ }
+    if (!optimized) optimized = coachLocalSimulation(raw, target);
     textarea.value = optimized;
     applyResult(optimized);
     renderPreview();
