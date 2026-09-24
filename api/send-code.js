@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: process.env.MAIL_FROM || 'CVavie <no-reply@cvavie.com>',
+        from: process.env.MAIL_FROM || 'CVavie <info@cvavie.com>',
         to: [email],
         subject,
         html

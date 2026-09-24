@@ -15,13 +15,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Méthode non autorisée. Utilisez POST.' });
   }
 
-  const { text = '', type = 'experience' } = req.body || {};
+    const { text = '', type = 'generic', lang = 'fr' } = req.body || {};
 
   if (!text || !text.trim()) {
     return res.status(400).json({ error: 'Texte manquant ou vide.' });
   }
 
-  const systemPrompt = `Agis comme un coach de carrière et un expert en recrutement. Prends le texte fourni par l'utilisateur et réécris-le dans un langage corporatif, hautement professionnel, formel et percutant pour le marché de l'emploi. Utilise des verbes d'action au début des phrases. Optimise la structure pour qu'elle passe les robots de tri de CV (ATS). Ne renvoie AUCUNE introduction ni conclusion, retourne UNIQUEMENT le texte corrigé et prêt à être inséré. N'utilise AUCUN formatage Markdown (pas d'astérisques, pas de gras, pas de titres) : uniquement du texte brut, avec des puces commençant par « • » si le texte comporte plusieurs réalisations.`;
+  const langInstruction = lang === 'en' ? '\n\nIMPORTANT : Rédige ta réponse entièrement en anglais canadien professionnel impeccable (même si le texte source est en français).' : '\n\nIMPORTANT : Rédige ta réponse entièrement en français québécois professionnel impeccable.';
+  const systemPrompt = `Agis comme un coach de carrière et un expert en recrutement. Prends le texte fourni par l'utilisateur et réécris-le dans un langage corporatif, hautement professionnel, formel et percutant pour le marché de l'emploi. Utilise des verbes d'action au début des phrases. Optimise la structure pour qu'elle passe les robots de tri de CV (ATS). Ne renvoie AUCUNE introduction ni conclusion, retourne UNIQUEMENT le texte corrigé et prêt à être inséré. N'utilise AUCUN formatage Markdown (pas d'astérisques, pas de gras, pas de titres) : uniquement du texte brut, avec des puces commençant par « • » si le texte comporte plusieurs réalisations.${langInstruction}`;
 
   try {
     // 1. Connexion à l'API Gemini si la clé d'environnement est présente

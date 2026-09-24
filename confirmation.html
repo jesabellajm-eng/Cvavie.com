@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Confirmation — CVavie.com</title>
+</head>
+<body>
+  <script>
+    // Alias propre pour l'URL de succès Stripe (https://cvavie.com/confirmation).
+    // On conserve les paramètres (?paid=true&email=...) et on renvoie vers la
+    // page principale, qui affiche la confirmation animée ou ouvre l'éditeur.
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('paid') === 'true') {
+        window.location.replace('/?' + params.toString());
+      } else {
+        window.location.replace('/');
+      }
+    })();
+  </script>
+  <noscript><a href="https://cvavie.com">Retour à CVavie.com</a></noscript>
+</body>
+</html>

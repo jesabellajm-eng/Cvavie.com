@@ -4535,3 +4535,35 @@ footer .site-brand .brand-tld{color:#7C8598!important}
 #landingView .faq-cat-tag.ai{background:rgba(167,139,250,.14)!important;color:#C4B5FD!important}
 #landingView .faq-list details{background:transparent!important}
 #landingView .faq-list details[open]{background:rgba(19,23,34,.6)!important;border-radius:12px}
+
+/* ===== Lettre de présentation assortie ===== */
+.preview-tabs{display:flex;gap:4px;background:#0d1117;border:1px solid #232D3F;border-radius:8px;padding:3px}
+.preview-tab{border:0;background:transparent;color:#8b93a7;font-size:11px;font-weight:600;padding:5px 14px;border-radius:6px;cursor:pointer;transition:.15s}
+.preview-tab:hover{color:#E2E8F0}
+.preview-tab.active{background:#9D4EDD;color:#fff}
+.letter-match-pill{background:rgba(45,212,191,.12);color:#2DD4BF;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:8px;letter-spacing:.04em}
+.letter-enable-row{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.letter-include-note{color:#2DD4BF;font-size:10.5px;font-weight:600}
+.letter-style-note{color:#A29BFE;font-size:11px;font-weight:600;margin:0 0 10px}
+#letterFields{display:flex;flex-direction:column;gap:12px}
+
+/* ===== Confirmation de paiement Stripe (Dark Premium) ===== */
+.success-backdrop{position:fixed;inset:0;z-index:140;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(900px 520px at 50% 18%,rgba(157,78,221,.22),rgba(3,4,7,0) 58%),rgba(3,4,7,.94);backdrop-filter:blur(14px);animation:successFade .28s ease}
+.success-backdrop[hidden]{display:none!important}
+.success-card{position:relative;width:100%;max-width:620px;text-align:center;background:linear-gradient(180deg,#151B29 0%,#10141F 100%);border:1px solid #232D3F;border-radius:28px;padding:52px 42px 40px;box-shadow:0 40px 110px rgba(0,0,0,.62),0 0 0 1px rgba(162,155,254,.08),0 0 90px rgba(157,78,221,.16);animation:successRise .42s cubic-bezier(.2,.9,.25,1.12)}
+.success-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;border:1px solid #232D3F;background:#0E1119;color:#94A3B8;font-size:18px;line-height:1;cursor:pointer;transition:.18s}
+.success-close:hover{color:#fff;border-color:#A78BFA;background:#161B28}
+.success-check{width:92px;height:92px;margin:0 auto 22px;border-radius:50%;display:grid;place-items:center;background:rgba(45,212,191,.10);box-shadow:0 0 0 10px rgba(45,212,191,.05),0 0 54px rgba(45,212,191,.28)}
+.success-check svg{width:92px;height:92px}
+.success-check-circle{fill:none;stroke:#2DD4BF;stroke-width:4;stroke-linecap:round;stroke-dasharray:195;stroke-dashoffset:195;animation:successDraw .7s .1s ease forwards}
+.success-check-mark{fill:none;stroke:#2DD4BF;stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:48;stroke-dashoffset:48;animation:successDraw .45s .62s ease forwards}
+.success-eyebrow{margin:0 0 14px;color:#A29BFE;font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+.success-card h2{margin:0 0 16px;color:#FFFFFF;font-size:clamp(26px,4.2vw,38px);line-height:1.16;letter-spacing:-.02em;font-weight:800}
+.success-copy{margin:0 auto 30px;max-width:46ch;color:#CBD5E1;font-size:15.5px;line-height:1.72}
+.success-cta{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:999px;padding:16px 30px;background:linear-gradient(135deg,#9D4EDD 0%,#7C3AED 100%);color:#FFFFFF;font-size:15px;font-weight:800;letter-spacing:.01em;cursor:pointer;box-shadow:0 16px 38px rgba(157,78,221,.38);transition:transform .18s ease,box-shadow .18s ease}
+.success-cta:hover{transform:translateY(-2px);box-shadow:0 22px 48px rgba(157,78,221,.48)}
+.success-cta:active{transform:translateY(0)}
+@keyframes successFade{from{opacity:0}to{opacity:1}}
+@keyframes successRise{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes successDraw{to{stroke-dashoffset:0}}
+@media (max-width:560px){.success-card{padding:42px 24px 32px;border-radius:22px}.success-copy{font-size:14.5px}.success-cta{width:100%}}

@@ -55,16 +55,21 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const defaultData = {
   template: 'template-1',
   accentColor: '#213f6d',
-  fullName: 'Jessica Meunier', jobTitle: 'Directrice marketing',
-  email: 'jessica@email.com', phone: '+1 514 555-0123',
-  location: 'Montréal, QC', website: 'linkedin.com/in/jessica',
-  summary: 'Professionnelle stratégique avec plus de 8 ans d’expérience en croissance de marques et en gestion d’équipes multidisciplinaires. Reconnue pour transformer les données en campagnes performantes et en expériences client mémorables.',
+  fullName: 'Jordan Roy', jobTitle: 'Directeur marketing',
+  email: 'jordan.roy@email.com', phone: '+1 514 555-0123',
+  location: 'Montréal, QC', website: 'linkedin.com/in/jordanroy',
+  summary: 'Plus de 8 ans d’expérience en croissance de marques et en gestion d’équipes multidisciplinaires. Expertise reconnue : transformer les données en campagnes performantes et en expériences client mémorables.',
   skills: 'Stratégie de marque\nMarketing numérique\nGestion d’équipe\nAnalyse de données\nSEO / SEM\nGestion de budget',
   languages: 'Français — Langue maternelle\nAnglais — Courant\nEspagnol — Intermédiaire',
   experiences: [
-    { role: 'Directrice marketing', company: 'Atelier Nord', location: 'Montréal', start: '2022', end: 'Aujourd’hui', description: '• Pilotage de la stratégie omnicanale et d’une équipe de 8 personnes.\n• Hausse de 42 % des revenus numériques en deux ans.\n• Optimisation d’un budget annuel de 1,2 M$.' },
+    { role: 'Directeur marketing', company: 'Atelier Nord', location: 'Montréal', start: '2022', end: 'Aujourd’hui', description: '• Pilotage de la stratégie omnicanale et d’une équipe de 8 personnes.\n• Hausse de 42 % des revenus numériques en deux ans.\n• Optimisation d’un budget annuel de 1,2 M$.' },
     { role: 'Responsable marketing numérique', company: 'Studio Boréal', location: 'Montréal', start: '2018', end: '2022', description: '• Conception de campagnes d’acquisition multicanales.\n• Réduction du coût d’acquisition de 28 %.\n• Déploiement d’un nouveau CRM et des parcours automatisés.' }
   ],
+  letter: {
+    enabled: false,
+    date: '', recipientName: '', recipientCompany: '', recipientAddress: '',
+    subject: '', salutation: '', body: '', closing: '', signature: ''
+  },
   education: [
     { degree: 'MBA — Marketing', school: 'HEC Montréal', start: '2016', end: '2018', description: 'Spécialisation en stratégie et transformation numérique.' },
     { degree: 'Baccalauréat en communication', school: 'Université de Montréal', start: '2012', end: '2015', description: '' }
@@ -82,7 +87,8 @@ function escapeHTML(value = '') {
 function loadData() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return stored ? { ...defaultData, ...stored } : structuredClone(defaultData);
+    if (stored) return { ...defaultData, ...stored, letter: { ...defaultData.letter, ...(stored.letter || {}) } };
+    return structuredClone(defaultData);
   } catch { return structuredClone(defaultData); }
 }
 
@@ -151,6 +157,173 @@ function renderRepeaters() {
 function setText(id, value, fallback = '') { $(id).textContent = value.trim() || fallback; }
 function lines(value) { return value.split('\n').map(v => v.trim()).filter(Boolean); }
 
+/*
+ * ============================================================================
+ * LETTRES DE PRÉSENTATION ASSORTIES — MOTEUR DE RENDU
+ * ============================================================================
+ * 4 structures qui héritent des polices et de la couleur d'accent du modèle
+ * de CV sélectionné :
+ *   classique   → 01—Quill, 08—North   (sobre, serif, centrée/minimale)
+ *   moderne     → 02—Atlas, 05—Harbor, 06—Vector (épurée, touches graphiques)
+ *   corporatif  → 03—Meridian, 07—Cadence (en-tête fort, couleur affirmée)
+ *   tech        → 04—Lumen (deux colonnes asymétriques, secteur techno)
+ *
+ * Chaque lettre est prête à recevoir les données découpées :
+ *   date, destinataire (nom/entreprise/adresse), objet, salutation,
+ *   corps (paragraphes séparés par une ligne vide), formule de politesse,
+ *   signature.
+ * ============================================================================
+ */
+let previewMode = 'cv'; // 'cv' | 'letter'
+
+const LETTER_STYLE_BY_TEMPLATE = {
+  'template-1': 'classique',   // Quill
+  'template-8': 'classique',   // North
+  'template-2': 'moderne',     // Atlas
+  'template-5': 'moderne',     // Harbor
+  'template-6': 'moderne',     // Vector
+  'template-3': 'corporatif',  // Meridian
+  'template-7': 'corporatif',  // Cadence
+  'template-4': 'tech'         // Lumen
+};
+
+/* Prépare et normalise tous les morceaux de la lettre (échappés, avec défauts) */
+function buildLetterParts(cvData, lang) {
+  const isEn = lang === 'en';
+  const L = cvData.letter || {};
+
+  const name = escapeHTML(cvData.fullName || (isEn ? 'Your Name' : 'Votre nom'));
+  const title = escapeHTML(cvData.jobTitle || '');
+  const contacts = [cvData.email, cvData.phone, cvData.location, cvData.website]
+    .filter(v => v && v.trim()).map(escapeHTML);
+
+  // Date : champ libre, sinon aujourd'hui au format canadien de la langue
+  let date = (L.date || '').trim();
+  if (!date) {
+    const today = new Date();
+    const place = (cvData.location || '').trim();
+    if (isEn) {
+      date = today.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+      if (place) date = place + ', ' + date;
+    } else {
+      date = today.toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+      date = place ? place + ', le ' + date : 'Le ' + date;
+    }
+  }
+  date = escapeHTML(date);
+
+  // Destinataire découpé : nom / entreprise / adresse
+  const recipientLines = [L.recipientName, L.recipientCompany, L.recipientAddress]
+    .filter(v => v && v.trim()).map(v => escapeHTML(v.trim()));
+
+  // Objet : champ libre, sinon déduit du titre professionnel
+  let subject = (L.subject || '').trim();
+  if (!subject && (cvData.jobTitle || '').trim()) {
+    subject = (isEn ? 'Application for the position of ' : 'Candidature au poste de ') + cvData.jobTitle.trim();
+  }
+  subject = escapeHTML(subject);
+
+  const salutation = escapeHTML((L.salutation || '').trim()
+    || (isEn ? 'Dear Hiring Manager,' : 'Madame, Monsieur,'));
+
+  // Corps : paragraphes séparés par une ligne vide (saut de ligne simple accepté)
+  const paragraphs = (L.body || '').split(/\n\s*\n|\n/)
+    .map(p => p.trim()).filter(Boolean).map(escapeHTML);
+
+  const closing = escapeHTML((L.closing || '').trim() || (isEn
+    ? 'Sincerely,'
+    : 'Je vous prie d’agréer, Madame, Monsieur, l’expression de mes salutations distinguées.'));
+
+  const signature = escapeHTML((L.signature || '').trim() || cvData.fullName || '');
+
+  return { isEn, name, title, contacts, date, recipientLines, subject, salutation, paragraphs, closing, signature };
+}
+
+function renderLetterSheetHTML(templateId, cvData, accentColor, lang = currentLanguage) {
+  const style = LETTER_STYLE_BY_TEMPLATE[templateId] || 'classique';
+  const accent = accentColor || '#213f6d';
+  const P = buildLetterParts(cvData, lang);
+  const contactLine = P.contacts.join('  ·  ');
+
+  // Morceaux communs aux 4 structures
+  const recipientHtml = P.recipientLines.length
+    ? '<div style="margin: 0 0 18px; line-height: 1.5; color: #1f2937;">' + P.recipientLines.map(l => '<div>' + l + '</div>').join('') + '</div>'
+    : '';
+  const subjectHtml = P.subject
+    ? '<p style="margin: 0 0 16px; font-weight: 700; color: #111827;">' + (P.isEn ? 'Subject: ' : 'Objet : ') + P.subject + '</p>'
+    : '';
+  const salutationHtml = '<p style="margin: 0 0 14px;">' + P.salutation + '</p>';
+  const bodyHtml = P.paragraphs.length
+    ? P.paragraphs.map(p => '<p style="margin: 0 0 12px; line-height: 1.6; color: #1f2937;">' + p + '</p>').join('')
+    : '<p style="margin: 0; color: #9ca3af; font-style: italic;">' + (P.isEn ? 'Your letter will appear here as you write…' : 'Votre lettre apparaîtra ici au fur et à mesure de votre rédaction…') + '</p>';
+  const closingHtml = '<p style="margin: 18px 0 0; line-height: 1.6;">' + P.closing + '</p>';
+  const signatureHtml = '<div style="margin-top: 28px;"><div style="font-weight: 700; color: #111827;">' + P.signature + '</div>'
+    + (P.title ? '<div style="color: #6b7280; font-size: 10.4px; margin-top: 2px;">' + P.title + '</div>' : '') + '</div>';
+  const signatureAccentHtml = '<div style="margin-top: 28px;"><div style="font-weight: 700; color: ' + accent + ';">' + P.signature + '</div>'
+    + (P.title ? '<div style="color: #6b7280; font-size: 10.4px; margin-top: 2px;">' + P.title + '</div>' : '') + '</div>';
+
+  // ── CLASSIQUE (Quill, North) : serif, sobre, en-tête centrée ──
+  if (style === 'classique') {
+    return '<div class="resume-sheet letter-sheet" style="font-family: \'Source Serif 4\', Georgia, Cambria, serif; font-size: 11px; line-height: 1.6; padding: 20mm 22mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="text-align: center; padding-bottom: 10px; margin-bottom: 24px; border-bottom: 1px solid #d6d3d1;">' +
+        '<div style="font-size: 24px; font-weight: 700; color: #111827;">' + P.name + '</div>' +
+        (P.title ? '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; font-style: italic; margin-top: 2px;">' + P.title + '</div>' : '') +
+        (contactLine ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;">' + contactLine + '</div>' : '') +
+      '</div>' +
+      '<div style="text-align: right; color: #4b5563; font-size: 10.6px; margin-bottom: 22px;">' + P.date + '</div>' +
+      recipientHtml + subjectHtml + salutationHtml + bodyHtml + closingHtml + signatureHtml +
+    '</div>';
+  }
+
+  // ── MODERNE (Atlas, Harbor, Vector) : sans-serif épuré, touches accent ──
+  if (style === 'moderne') {
+    const recipientModerne = P.recipientLines.length
+      ? '<div style="margin: 0 0 18px; line-height: 1.5; color: #1f2937; border-left: 3px solid ' + accent + '; padding-left: 10px;">' + P.recipientLines.map(l => '<div>' + l + '</div>').join('') + '</div>'
+      : '';
+    return '<div class="resume-sheet letter-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 11px; line-height: 1.6; padding: 18mm 20mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="margin-bottom: 24px;">' +
+        '<div style="width: 42px; height: 4px; background: ' + accent + '; border-radius: 2px; margin-bottom: 10px;"></div>' +
+        '<div style="font-size: 23px; font-weight: 700; color: #111827; letter-spacing: -0.01em;">' + P.name + '</div>' +
+        (P.title ? '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + P.title + '</div>' : '') +
+        (contactLine ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;">' + contactLine + '</div>' : '') +
+      '</div>' +
+      '<div style="text-align: right; color: ' + accent + '; font-size: 10.6px; font-weight: 600; margin-bottom: 22px;">' + P.date + '</div>' +
+      recipientModerne + subjectHtml + salutationHtml + bodyHtml + closingHtml + signatureAccentHtml +
+    '</div>';
+  }
+
+  // ── CORPORATIF (Meridian, Cadence) : bandeau d’en-tête affirmé ──
+  if (style === 'corporatif') {
+    const subjectCorp = P.subject
+      ? '<p style="margin: 0 0 16px; font-weight: 700; color: #111827; text-transform: uppercase; letter-spacing: 0.04em; font-size: 10.8px;">' + (P.isEn ? 'Subject: ' : 'Objet : ') + P.subject + '</p>'
+      : '';
+    return '<div class="resume-sheet letter-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 11px; line-height: 1.6; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+      '<div style="background: ' + accent + '; color: #ffffff; padding: 11mm 16mm 9mm;">' +
+        '<div style="font-size: 24px; font-weight: 700; letter-spacing: -0.01em;">' + P.name + '</div>' +
+        (P.title ? '<div style="font-size: 11.5px; color: rgba(255, 255, 255, 0.9); font-weight: 500; margin-top: 2px;">' + P.title + '</div>' : '') +
+        (contactLine ? '<div style="font-size: 9.6px; color: rgba(255, 255, 255, 0.85); margin-top: 8px;">' + contactLine + '</div>' : '') +
+      '</div>' +
+      '<div style="padding: 10mm 16mm 12mm;">' +
+        '<div style="text-align: right; color: #4b5563; font-size: 10.6px; margin-bottom: 20px;">' + P.date + '</div>' +
+        recipientHtml + subjectCorp + salutationHtml + bodyHtml + closingHtml + signatureHtml +
+      '</div>' +
+    '</div>';
+  }
+
+  // ── TECH / DEUX COLONNES (Lumen) : rail latéral asymétrique ──
+  return '<div class="resume-sheet letter-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 11px; line-height: 1.6; display: flex; flex-direction: row; width: 794px; min-height: 1123px; background: #ffffff; color: #1f2937; box-sizing: border-box;">' +
+    '<aside style="width: 210px; min-width: 210px; background: color-mix(in srgb, ' + accent + ' 7%, #f8fafc); border-right: 1px solid color-mix(in srgb, ' + accent + ' 16%, #e2e8f0); padding: 28px 20px; box-sizing: border-box;">' +
+      '<div style="font-size: 19px; font-weight: 700; color: #111827; line-height: 1.25;">' + P.name + '</div>' +
+      (P.title ? '<div style="font-size: 10.5px; color: ' + accent + '; font-weight: 600; margin-top: 4px;">' + P.title + '</div>' : '') +
+      (P.contacts.length ? '<div style="margin-top: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 9.6px; color: #4b5563;">' + P.contacts.map(c => '<div>' + c + '</div>').join('') + '</div>' : '') +
+    '</aside>' +
+    '<div style="flex: 1 1 0%; padding: 28px 26px; box-sizing: border-box;">' +
+      '<div style="text-align: right; color: #6b7280; font-size: 10.4px; margin-bottom: 20px;">' + P.date + '</div>' +
+      recipientHtml + subjectHtml + salutationHtml + bodyHtml + closingHtml + signatureAccentHtml +
+    '</div>' +
+  '</div>';
+}
+
 function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLanguage) {
   const isEn = (lang === 'en');
   const accent = accentColor || '#213f6d';
@@ -187,12 +360,12 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
       
       let bulletsHtml = '';
       if (bullets.length > 1 || (bullets.length === 1 && item.description.includes('•'))) {
-        bulletsHtml = '<ul style="margin: 4px 0 0; padding-left: 14px; list-style: disc;">' + bullets.map(b => '<li style="margin-bottom: 2.5px; line-height: 1.5;">' + escapeHTML(b) + '</li>').join('') + '</ul>';
+        bulletsHtml = '<ul style="margin: 4px 0 0; padding-left: 14px; list-style: disc;">' + bullets.map(b => '<li style="padding-bottom: 7px; line-height: 1.6;">' + escapeHTML(b) + '</li>').join('') + '</ul>';
       } else if (item.description) {
-        bulletsHtml = '<p style="margin: 3px 0 0; color: #374151; line-height: 1.55;">' + escapeHTML(item.description) + '</p>';
+        bulletsHtml = '<p style="margin: 3px 0 0; color: #374151; line-height: 1.6;">' + escapeHTML(item.description) + '</p>';
       }
 
-      return '<div style="margin-bottom: 12px;">' +
+      return '<div style="margin-bottom: 20px;">' +
         '<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">' +
           '<div style="font-weight: 700; color: #111827; font-size: 11px;">' + role + '<span style="font-weight: 400; color: #4b5563;">' + company + '</span></div>' +
           '<div style="white-space: nowrap; color: #6b7280; font-size: 9.6px;">' + dates + '</div>' +
@@ -211,7 +384,7 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
       const dates = escapeHTML([item.start, item.end].filter(Boolean).join(' — '));
       const desc = item.description ? '<div style="color: #4b5563; margin-top: 2px;">' + escapeHTML(item.description) + '</div>' : '';
 
-      return '<div style="margin-bottom: 9px;">' +
+      return '<div style="margin-bottom: 14px;">' +
         '<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">' +
           '<div style="font-weight: 700; color: #111827; font-size: 11px;">' + degree + '</div>' +
           '<div style="white-space: nowrap; color: #6b7280; font-size: 9.6px;">' + dates + '</div>' +
@@ -250,11 +423,11 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
         '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + title + '</div>' +
         (contactText ? '<div style="font-size: 9.6px; color: #4b5563; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
       '</div>' +
-      (summary ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
-      (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-      (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-      (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-      (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+      (summary ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid ' + accent + '; padding-bottom: 3px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
     '</div>';
   }
 
@@ -266,11 +439,11 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
         '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + title + '</div>' +
         (contactText ? '<div style="font-size: 9.6px; color: #4b5563; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
       '</div>' +
-      (summary ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
-      (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-      (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-      (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-      (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+      (summary ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
     '</div>';
   }
 
@@ -282,11 +455,11 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
         '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.08em;">' + title + '</div>' +
         (contactText ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
       '</div>' +
-      (summary ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #374151;">' + summary + '</p></section>' : '') +
-      (experiences.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-      (education.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-      (skills.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-      (languages.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+      (summary ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #374151;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
     '</div>';
   }
 
@@ -298,11 +471,11 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
         '<div style="font-size: 11.5px; color: ' + accent + '; font-weight: 600; margin-top: 3px; font-style: italic;">' + title + '</div>' +
         (contactText ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
       '</div>' +
-      (summary ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
-      (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-      (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-      (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-      (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+      (summary ? '<section style="margin-top: 26px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 13.5px; letter-spacing: 0.01em; text-transform: none; font-weight: 700; color: ' + accent + '; margin-bottom: 6px; border-bottom: 1px solid #d6d3d1; padding-bottom: 4px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
     '</div>';
   }
 
@@ -315,47 +488,47 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
         (contactText ? '<div style="font-size: 9.6px; color: rgba(255, 255, 255, 0.85); margin-top: 8px;"><span>' + contactText + '</span></div>' : '') +
       '</div>' +
       '<div style="padding: 10mm 16mm 14mm;">' +
-        (summary ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
-        (experiences.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-        (education.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-        (skills.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-        (languages.length ? '<section style="margin-top: 14px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+        (summary ? '<section style="margin-top: 22px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+        (experiences.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+        (education.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+        (skills.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+        (languages.length ? '<section style="margin-top: 26px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: #ffffff; margin-bottom: 6px; background: ' + accent + '; padding: 3px 8px; display: inline-block; border-radius: 2px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
       '</div>' +
     '</div>';
   }
 
   // 6. TEMPLATE-7 (Cadence)
   if (templateId === 'template-7') {
-    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.2px; line-height: 1.4; padding: 12mm 14mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
+    return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.2px; line-height: 1.5; padding: 12mm 14mm; background: #ffffff; color: #1f2937; box-sizing: border-box; width: 794px; min-height: 1123px;">' +
       '<div style="border-left: 4px solid ' + accent + '; padding-left: 10px; margin-bottom: 12px;">' +
         '<div style="font-size: 24px; font-weight: 700; color: #111827;">' + name + '</div>' +
         '<div style="font-size: 11px; color: ' + accent + '; font-weight: 600; margin-top: 2px;">' + title + '</div>' +
         (contactText ? '<div style="font-size: 9.3px; color: #6b7280; margin-top: 4px;"><span>' + contactText + '</span></div>' : '') +
       '</div>' +
-      (summary ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
-      (experiences.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-      (education.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-      (skills.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-      (languages.length ? '<section style="margin-top: 10px;"><h3 style="font-size: 10.2px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+      (summary ? '<section style="margin-top: 22px;"><h3 style="font-size: 10.2px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+      (experiences.length ? '<section style="margin-top: 22px;"><h3 style="font-size: 10.2px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+      (education.length ? '<section style="margin-top: 22px;"><h3 style="font-size: 10.2px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      (skills.length ? '<section style="margin-top: 22px;"><h3 style="font-size: 10.2px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+      (languages.length ? '<section style="margin-top: 22px;"><h3 style="font-size: 10.2px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 5px; display: flex; align-items: center; gap: 7px;"><span style="display: inline-block; width: 14px; height: 3px; background: ' + accent + ';"></span>' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
     '</div>';
   }
 
   // 7. TEMPLATE-5 (Harbor — 2 colonnes)
   if (templateId === 'template-5') {
     return '<div class="resume-sheet" style="font-family: Inter, \'Helvetica Neue\', Arial, sans-serif; font-size: 10.6px; line-height: 1.55; display: flex; flex-direction: row; width: 794px; min-height: 1123px; background: #ffffff; box-sizing: border-box;">' +
-      '<aside style="width: 235px; min-width: 235px; background: color-mix(in srgb, ' + accent + ' 6%, #f8fafc); border-right: 1px solid color-mix(in srgb, ' + accent + ' 16%, #e2e8f0); padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">' +
+      '<aside style="width: 235px; min-width: 235px; background: color-mix(in srgb, ' + accent + ' 6%, #f8fafc); border-right: 1px solid color-mix(in srgb, ' + accent + ' 16%, #e2e8f0); padding: 26px 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">' +
         '<div>' +
           '<div style="font-size: 21px; font-weight: 700; color: #111827; line-height: 1.2;">' + name + '</div>' +
           '<div style="font-size: 11px; color: ' + accent + '; font-weight: 600; margin-top: 4px;">' + title + '</div>' +
         '</div>' +
-        (contacts.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.contact + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px; color: #4b5563;">' + contacts.map(c => '<div>' + c + '</div>').join('') + '</div></section>' : '') +
-        (skills.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px;">' + skills.map(s => '<div>• ' + escapeHTML(s) + '</div>').join('') + '</div></section>' : '') +
-        (languages.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px;">' + languages.map(l => '<div>' + escapeHTML(l) + '</div>').join('') + '</div></section>' : '') +
+        (contacts.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.contact + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px; color: #4b5563;">' + contacts.map(c => '<div>' + c + '</div>').join('') + '</div></section>' : '') +
+        (skills.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px;">' + skills.map(s => '<div>• ' + escapeHTML(s) + '</div>').join('') + '</div></section>' : '') +
+        (languages.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3><div style="display: flex; flex-direction: column; gap: 4px; font-size: 9.6px;">' + languages.map(l => '<div>' + escapeHTML(l) + '</div>').join('') + '</div></section>' : '') +
       '</aside>' +
-      '<div style="flex: 1 1 0%; padding: 26px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">' +
-        (summary ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #374151;">' + summary + '</p></section>' : '') +
-        (experiences.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-        (education.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+      '<div style="flex: 1 1 0%; padding: 26px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">' +
+        (summary ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #374151;">' + summary + '</p></section>' : '') +
+        (experiences.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+        (education.length ? '<section><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
       '</div>' +
     '</div>';
   }
@@ -367,11 +540,11 @@ function renderCVSheetHTML(templateId, cvData, accentColor, lang = currentLangua
       '<div style="font-size: 12px; color: ' + accent + '; font-weight: 600; margin-top: 3px;">' + title + '</div>' +
       (contactText ? '<div style="font-size: 9.6px; color: #6b7280; margin-top: 6px;"><span>' + contactText + '</span></div>' : '') +
     '</div>' +
-    (summary ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
-    (experiences.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
-    (education.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
-    (skills.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
-    (languages.length ? '<section style="margin-top: 16px;"><h3 style="font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
+    (summary ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.summary + '</h3><p style="margin: 0; color: #1f2937;">' + summary + '</p></section>' : '') +
+    (experiences.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.experience + '</h3>' + renderExpItems() + '</section>' : '') +
+    (education.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.education + '</h3>' + renderEduItems() + '</section>' : '') +
+    (skills.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.skills + '</h3>' + renderSkillsList() + '</section>' : '') +
+    (languages.length ? '<section style="margin-top: 28px;"><h3 style="font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 700; color: ' + accent + '; margin-bottom: 6px;">' + labels.languages + '</h3>' + renderLanguagesList() + '</section>' : '') +
   '</div>';
 }
 
@@ -382,8 +555,12 @@ function renderPreview() {
   const currentTemplate = data.template || 'template-2';
   const currentAccent = data.accentColor || '#213f6d';
 
-  // Render complete HTML for the selected template
-  preview.innerHTML = renderCVSheetHTML(currentTemplate, data, currentAccent, currentLanguage);
+  // Mode lettre : la feuille assortie remplace l'aperçu du CV
+  if (previewMode === 'letter' && data.letter && data.letter.enabled) {
+    preview.innerHTML = renderLetterSheetHTML(currentTemplate, data, currentAccent, currentLanguage);
+  } else {
+    preview.innerHTML = renderCVSheetHTML(currentTemplate, data, currentAccent, currentLanguage);
+  }
   preview.className = 'resume ' + currentTemplate;
   preview.style.setProperty('--user-accent', currentAccent);
   document.documentElement.style.setProperty('--hero-accent', currentAccent);
@@ -410,8 +587,14 @@ function populateForm() {
   ['fullName','jobTitle','email','phone','location','website','summary','skills','languages'].forEach(key => {
     const field = $('#' + key); if (field) field.value = data[key] || '';
   });
+  // Champs de la lettre de présentation
+  Object.entries(LETTER_FIELD_MAP).forEach(([id, key]) => {
+    const field = $('#' + id); if (field) field.value = (data.letter && data.letter[key]) || '';
+  });
   $('#templateSelect').value = data.template;
-  renderRepeaters(); renderPreview(); setZoom(zoom);
+  renderRepeaters();
+  if (data.letter && data.letter.enabled) setLetterEnabled(true);
+  renderPreview(); setZoom(zoom);
 }
 
 function readRepeatInput(target) {
@@ -423,14 +606,71 @@ function readRepeatInput(target) {
   return true;
 }
 
+const LETTER_FIELD_MAP = {
+  letterDate: 'date', letterRecipientName: 'recipientName',
+  letterRecipientCompany: 'recipientCompany', letterRecipientAddress: 'recipientAddress',
+  letterSubject: 'subject', letterSalutation: 'salutation',
+  letterBody: 'body', letterClosing: 'closing', letterSignature: 'signature'
+};
+
 $('#resumeForm').addEventListener('input', e => {
   if (readRepeatInput(e.target)) return;
+  if (e.target.id in LETTER_FIELD_MAP) {
+    data.letter[LETTER_FIELD_MAP[e.target.id]] = e.target.value;
+    renderPreview();
+    scheduleSave();
+    return;
+  }
   if (e.target.id && e.target.id in data) {
     data[e.target.id] = e.target.value;
     renderPreview();
     scheduleSave();
   }
 });
+
+// ── Interrupteur « Ajouter une lettre de présentation » ──
+function setLetterEnabled(on) {
+  data.letter.enabled = on;
+  const fields = $('#letterFields');
+  const tabs = $('#previewTabs');
+  const pill = $('#letterMatchPill');
+  const btn = $('#toggleLetter');
+  if (fields) fields.hidden = !on;
+  if (tabs) tabs.hidden = !on;
+  if (pill) pill.hidden = !on;
+  if (btn) btn.textContent = on
+    ? (currentLanguage === 'en' ? '✉ Remove cover letter' : '✉ Retirer la lettre de présentation')
+    : (currentLanguage === 'en' ? '✉ Add a cover letter' : '✉ Ajouter une lettre de présentation');
+  updateLetterStyleNote();
+  if (!on && previewMode === 'letter') setPreviewMode('cv');
+  renderPreview();
+  scheduleSave();
+}
+
+function updateLetterStyleNote() {
+  const note = $('#letterStyleNote');
+  if (!note) return;
+  const styleNames = {
+    fr: { classique: 'Classique', moderne: 'Moderne', corporatif: 'Corporatif', tech: 'Deux colonnes' },
+    en: { classique: 'Classic', moderne: 'Modern', corporatif: 'Corporate', tech: 'Two-column' }
+  };
+  const style = LETTER_STYLE_BY_TEMPLATE[data.template] || 'classique';
+  const lang = currentLanguage === 'en' ? 'en' : 'fr';
+  note.textContent = (lang === 'en'
+    ? `✦ Matched to your resume — ${styleNames.en[style]} style, same fonts and accent colour.`
+    : `✦ Assortie à votre CV — style ${styleNames.fr[style]}, mêmes polices et couleur d'accent.`);
+}
+
+function setPreviewMode(mode) {
+  previewMode = mode;
+  $('#tabCv')?.classList.toggle('active', mode === 'cv');
+  $('#tabLetter')?.classList.toggle('active', mode === 'letter');
+  renderPreview();
+}
+
+$('#toggleLetter')?.addEventListener('click', () => setLetterEnabled(!data.letter.enabled));
+$('#tabCv')?.addEventListener('click', () => setPreviewMode('cv'));
+$('#tabLetter')?.addEventListener('click', () => setPreviewMode('letter'));
 
 $('#resumeForm').addEventListener('click', e => {
   const removeBtn = e.target.closest('.remove-item');
@@ -459,6 +699,7 @@ $('#addEducation').addEventListener('click', () => {
 
 $('#templateSelect').addEventListener('change', e => {
   data.template = e.target.value;
+  updateLetterStyleNote();
   renderPreview();
   scheduleSave();
 });
@@ -495,6 +736,7 @@ $('#zoomIn').addEventListener('click', () => setZoom(zoom + .1));
  */
 const paymentModal = $('#paymentModal');
 const clientModal = $('#clientAuthModal');
+const paymentSuccessModal = $('#paymentSuccessModal');
 
 function openPaymentModal() {
   const emailInput = $('#checkoutEmailInput');
@@ -512,6 +754,32 @@ function closePaymentModal() {
   document.body.style.overflow = '';
   $('#downloadBtn')?.focus();
 }
+
+function openPaymentSuccess() {
+  if (!paymentSuccessModal) { showBuilder(data.template); return; }
+  paymentSuccessModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => $('#successStartBtn')?.focus(), 120);
+}
+
+function closePaymentSuccess() {
+  if (!paymentSuccessModal) return;
+  paymentSuccessModal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+$('#closeSuccessModal')?.addEventListener('click', () => {
+  closePaymentSuccess();
+  showLanding();
+});
+
+$('#successStartBtn')?.addEventListener('click', () => {
+  closePaymentSuccess();
+  showBuilder(data.template);
+  showToast(currentLanguage === 'en'
+    ? '✓ Lifetime access active — resume and cover letter included.'
+    : '✓ Accès à vie actif — CV et lettre de présentation inclus.');
+});
 
 function updateCheckoutLink() {
   const emailInput = $('#checkoutEmailInput');
@@ -563,6 +831,7 @@ $('#clientOpenCheckout')?.addEventListener('click', () => {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (paymentSuccessModal && !paymentSuccessModal.hidden) { closePaymentSuccess(); showLanding(); }
     if (!paymentModal.hidden) closePaymentModal();
     if (!clientModal.hidden) closeClientModal();
   }
@@ -780,11 +1049,24 @@ $('#downloadBtn').addEventListener('click', () => {
  * Repli automatique : fenêtre d'impression navigateur si le serveur échoue.
  */
 async function exportPDF() {
-  const sheet = document.querySelector('#resumePreview .resume-sheet, #resumePreview .resume-page, #resumePreview .resume');
   const isEn = currentLanguage === 'en';
-  if (!sheet) return showToast(isEn ? 'Nothing to export yet.' : 'Rien à exporter pour le moment.');
 
-  const filename = `${(data.fullName || 'mon-cv').trim().replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '-').replace(/^-|-$/g, '')}-CV`;
+  // Page 1 : le CV (toujours régénéré, même si l'aperçu affiche la lettre)
+  const cvHtml = renderCVSheetHTML(data.template || 'template-2', data, data.accentColor || '#213f6d', currentLanguage);
+
+  // Page 2 : la lettre assortie, si activée
+  const letterOn = data.letter && data.letter.enabled;
+  const letterHtml = letterOn ? renderLetterSheetHTML(data.template || 'template-2', data, data.accentColor || '#213f6d', currentLanguage) : '';
+
+  // Assemblage multi-pages : les deux feuilles se suivent, le CV force un saut
+  // de page apres lui. Chaque feuille garde sa classe .resume-sheet (le serveur
+  // la cale en pleine page Lettre), donc exactement 2 pages nettes.
+  const combinedHtml = letterOn
+    ? cvHtml.replace('style="', 'style="page-break-after: always; ') + letterHtml
+    : cvHtml;
+
+  const sheet = { outerHTML: combinedHtml };
+  const filename = `${(data.fullName || 'mon-cv').trim().replace(/[^a-zA-ZÀ-ÿ0-9]+/g, '-').replace(/^-|-$/g, '')}-${letterOn ? 'CV-Lettre' : 'CV'}`;
   const downloadBtn = $('#downloadBtn');
 
   showToast(isEn ? '⏳ Génération de votre PDF…' : '⏳ Génération de votre PDF…');
@@ -955,6 +1237,13 @@ document.addEventListener('click', async e => {
       };
     }
   }
+  // Branche lettre de présentation : génération complète via /api/generate-letter
+  if (target === 'letter') {
+    e.stopImmediatePropagation();
+    await generateLetterWithAI(btn);
+    return;
+  }
+
   if (!textarea || !applyResult) return; // bouton de démo statique : aucun champ lié
 
   // Alerte douce si le brouillon est vide ou trop court
@@ -984,7 +1273,7 @@ document.addEventListener('click', async e => {
       const res = await fetch('/api/optimize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: raw, type: target })
+        body: JSON.stringify({ text: raw, type: target, lang: currentLanguage })
       });
       if (res.ok) {
         const json = await res.json();
@@ -1010,6 +1299,106 @@ document.addEventListener('click', async e => {
   }
 });
 
+/*
+ * ============================================================================
+ * GÉNÉRATION IA DE LA LETTRE DE PRÉSENTATION (Gemini 2.5 Flash)
+ * Envoie le CV + brouillon éventuel à /api/generate-letter, puis injecte les
+ * champs découpés (date, destinataire, objet, salutation, 4 paragraphes,
+ * politesse, signature) dans le formulaire. Même UX anti-stress que le Coach.
+ * ============================================================================
+ */
+async function generateLetterWithAI(btn) {
+  const isEn = currentLanguage === 'en';
+
+  // Il faut au minimum un CV rempli (le sommaire ou une expérience)
+  if (!(data.summary || '').trim() && !(data.experiences || []).length) {
+    showToast(isEn
+      ? 'Fill in your resume first — the letter builds on it! 💡'
+      : 'Remplissez d’abord votre CV — la lettre s’appuie dessus ! 💡');
+    return;
+  }
+
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.classList.add('coach-loading');
+  btn.textContent = isEn
+    ? '☕ Relax, the coach is writing your letter...'
+    : '☕ Relaxez, le coach rédige votre lettre...';
+
+  const startedAt = Date.now();
+
+  try {
+    const res = await fetch('/api/generate-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cvData: {
+          fullName: data.fullName, jobTitle: data.jobTitle,
+          email: data.email, phone: data.phone, location: data.location,
+          summary: data.summary, skills: data.skills, languages: data.languages,
+          experiences: data.experiences, education: data.education
+        },
+        letterDraft: {
+          recipientName: data.letter.recipientName,
+          recipientCompany: data.letter.recipientCompany,
+          notes: data.letter.body // brouillon éventuel de l'utilisateur
+        },
+        jobTarget: data.letter.subject || data.jobTitle,
+        lang: currentLanguage
+      })
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (!json || !json.success || !json.letter) throw new Error('Réponse invalide');
+
+    // Délai rassurant minimal identique au Coach (2,5 s au total)
+    const elapsed = Date.now() - startedAt;
+    if (elapsed < COACH_LOADING_MS) {
+      await new Promise(r => setTimeout(r, COACH_LOADING_MS - elapsed));
+    }
+
+    const L = json.letter;
+    const dest = L.destinataire || {};
+    const corps = L.corps_lettre || {};
+
+    // Injection des champs découpés dans data.letter
+    if (L.date_et_lieu) data.letter.date = L.date_et_lieu;
+    if (dest.nom_recruteur) data.letter.recipientName = dest.nom_recruteur;
+    if (dest.nom_entreprise) data.letter.recipientCompany = dest.nom_entreprise;
+    if (dest.adresse_entreprise) data.letter.recipientAddress = dest.adresse_entreprise;
+    if (L.objet) data.letter.subject = String(L.objet).replace(/^Objet\s*:\s*/i, '');
+    if (L.salutation) data.letter.salutation = L.salutation;
+    const paragraphs = [corps.paragraphe_accroche, corps.paragraphe_entreprise, corps.paragraphe_candidat, corps.paragraphe_conclusion].filter(p => p && p.trim());
+    if (paragraphs.length) data.letter.body = paragraphs.join('\n\n');
+    if (L.formule_politesse) data.letter.closing = L.formule_politesse;
+    if (L.signature_prenom_nom) data.letter.signature = L.signature_prenom_nom;
+
+    // Refléter dans le formulaire + aperçu
+    Object.entries(LETTER_FIELD_MAP).forEach(([id, key]) => {
+      const field = $('#' + id); if (field) field.value = data.letter[key] || '';
+    });
+    if (previewMode === 'letter') renderPreview();
+    scheduleSave();
+
+    // Notification turquoise de validation
+    const bodyField = $('#letterBody');
+    if (bodyField) showCoachValidation(bodyField);
+    showToast(isEn
+      ? '✨ Your cover letter is ready — review it in the Letter tab!'
+      : '✨ Votre lettre est prête — voyez-la dans l’onglet Lettre !');
+  } catch (err) {
+    console.error('Génération lettre échouée:', err);
+    showToast(isEn
+      ? 'The coach could not write the letter right now — try again in a moment.'
+      : 'Le coach n’a pas pu rédiger la lettre pour l’instant — réessayez dans un moment.');
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('coach-loading');
+    btn.textContent = originalText;
+  }
+}
+
 function showToast(message) {
   const toast = $('#toast'); 
   if (!toast) return;
@@ -1024,6 +1413,10 @@ function showToast(message) {
  * ============================================================================
  */
 const FR_EN = {
+  "Paiement confirmé • Accès à vie": "Payment confirmed • Lifetime access",
+  "Félicitations ! Vous êtes en route vers l’emploi de vos rêves, à vie !": "Congratulations! You’re on your way to your dream job, for life!",
+  "Votre accès premium unique à CVavie.com est maintenant activé. Pas d’abonnement, pas de frais cachés. Commençons à propulser votre carrière avec l’IA.": "Your one-time premium access to CVavie.com is now active. No subscriptions, no hidden fees. Let’s start boosting your career with AI.",
+  "Créer mon CV & ma Lettre": "Create my Resume & Cover Letter",
   "Aucun abonnement. Ni maintenant, ni plus tard.": "No subscription. Not now, not later.",
   "Payez une fois. Un créateur de CV à vie.": "Pay once. Resume builder for life.",
   "23,99 $ — un seul paiement, accès à vie. Jamais d’abonnement.": "$23.99 — one payment, lifetime access. No subscription, ever.",
@@ -1055,6 +1448,32 @@ const FR_EN = {
   '✦ Optimiser le texte par IA':'✦ AI Optimize Text',
   '✦ Écris tes idées simplement — le coach IA les transforme en réalisations percutantes.':'✦ Just jot down your ideas — the AI coach turns them into impactful, ATS-ready achievements.',
   '✦ Optimisation en cours…':'✦ Optimizing with AI…',
+  'Lettre de présentation':'Cover letter',
+  'Assortie ✦':'Matched ✦',
+  '✉ Ajouter une lettre de présentation':'✉ Add a cover letter',
+  'Incluse dans votre paiement unique de 23,99 $ — aucun supplément.':'Included in your one-time $23.99 payment — no extra charge.',
+  'Date':'Date',
+  "Vide = aujourd'hui automatiquement":"Empty = today automatically",
+  'Destinataire':'Recipient',
+  'Madame Tremblay / Équipe des RH':'Ms. Tremblay / HR Team',
+  'Entreprise':'Company',
+  "Nom de l'entreprise":"Company name",
+  "Adresse de l'entreprise":"Company address",
+  'Ville, province (facultatif)':'City, province (optional)',
+  'Objet':'Subject',
+  'Candidature au poste de…':'Application for the position of…',
+  'Salutation':'Salutation',
+  'Madame, Monsieur,':'Dear Hiring Manager,',
+  'Corps de la lettre':'Letter body',
+  'Séparez vos paragraphes par une ligne vide : accroche, ce que vous apportez, pourquoi cette entreprise, appel à l’action…':'Separate paragraphs with a blank line: hook, what you bring, why this company, call to action…',
+  '✦ Décrivez simplement le poste visé et vos forces — le coach IA rédige la lettre complète pour vous.':'✦ Simply describe the target job and your strengths — the AI coach writes the full letter for you.',
+  '✦ Rédiger ma lettre par IA':'✦ Write my letter with AI',
+  'Formule de politesse':'Closing formula',
+  'Je vous prie d’agréer…':'Sincerely…',
+  'Signature':'Signature',
+  'Votre nom (vide = nom du CV)':'Your name (empty = resume name)',
+  'CV':'Resume',
+  'Lettre':'Letter',
   'Fonctionnement':'How it works','Avantages':'Features','Modèles':'Templates','Créer mon CV':'Create my resume',
   'Sans abonnement. Maintenant ou plus tard.':'No subscription. Not now, not later.','Payez une fois.':'Pay once.','Créez votre CV':'Build your resume','pour la vie.':'for life.',
   '23,99 $ — un seul paiement, accès à vie.':'$23.99 — one payment, lifetime access.','Sans abonnement, jamais.':'No subscription, ever.','Voir la comparaison':'See the comparison',
@@ -1090,7 +1509,7 @@ const FR_EN = {
   "Gestionnaire de projet numérique · Montréal (QC)": "Digital Project Manager · Montreal (QC)",
   "« Enfin un créateur de CV sans tactique trompeuse. Les autres plateformes vous promettent un CV à 2 $ et vous facturent chaque mois en douce. Ici, c’est 23,99 $ payés une fois pour de vrai, les 8 modèles passent sans problème les logiciels ATS et le résultat est ultra professionnel. »": "“Finally a resume builder with zero dark patterns. Other platforms promise a $2 resume and charge you monthly behind your back. Here, it is $23.99 paid once for real, all 8 templates pass ATS software smoothly, and the result looks ultra professional.”",
   "Sarah L.": "Sarah L.",
-  "Analyste recrutement & RH · Paris, France": "Recruitment & HR Analyst · Paris, France",
+  "Analyste recrutement & RH · Montréal, QC": "Recruitment & HR Analyst · Montréal, QC",
   "Les questions que l’on se pose après s’être fait avoir par une offre d’essai à 2 $ ou 3 $.": "The questions people ask after being burned by a $2 or $3 trial.",
   "Est-ce vraiment un seul paiement unique de 23,99 $ ?": "Is this really a one-time payment of $23.99?",
   "Oui, exactement. Un paiement unique de 23,99 $ vous donne un accès à vie. Nous n’enregistrons pas votre carte bancaire pour plus tard, il n’y a aucune date de reconduction et aucun abonnement caché. Si vous revenez modifier votre CV dans six mois ou dans cinq ans, vous ne serez plus jamais facturé.": "Yes, exactly. A single $23.99 payment grants lifetime access. We do not store your card for later, there is no renewal date, and no hidden subscription. If you come back to edit your resume in six months or five years, you will never be charged again.",
@@ -1287,15 +1706,15 @@ function translateRoot(root, lang) {
 const HERO_CONTENT = {
   fr: {
     windowTitle: 'Aperçu en direct — Format A4',
-    name: 'Camille Rousseau',
-    role: 'Chargée de projet numérique',
-    contact: '<span>camille.rousseau@exemple.fr</span> · <span>+33 6 12 34 56 78</span> · <span>Lyon, France</span> · <span>linkedin.com/in/camillerousseau</span>',
+    name: 'Jordan Roy',
+    role: 'Gestionnaire de projet numérique',
+    contact: '<span>jordan.roy@email.com</span> · <span>+1 514 555-0123</span> · <span>Montréal, QC</span> · <span>linkedin.com/in/jordanroy</span>',
     secProfile: 'PROFIL',
-    profileText: 'Chargée de projet numérique avec 8 ans d’expérience en agence et chez l’annonceur. Spécialisée dans le pilotage de refontes web complexes, la coordination d’équipes multidisciplinaires et l’optimisation des processus de livraison pour maximiser l’impact utilisateur.',
+    profileText: 'Gestionnaire de projet numérique avec 8 ans d’expérience en agence et chez l’annonceur. Expertise en pilotage de refontes web complexes, la coordination d’équipes multidisciplinaires et l’optimisation des processus de livraison pour maximiser l’impact utilisateur.',
     secExp: 'EXPÉRIENCE PROFESSIONNELLE',
     job1Title: '<strong>Chargée de projet senior</strong> — Atelier Vallon',
     job1Date: '2021 — Aujourd’hui',
-    job1City: 'Lyon, France',
+    job1City: 'Montréal, QC',
     job1Bullets: [
       'Piloté la refonte intégrale d’une plateforme e-commerce de 40 000 références, livrée avec deux semaines d’avance.',
       'Réduit de 31 % le temps de chargement moyen en réorganisant le parcours utilisateur et les requêtes critiques.',
@@ -1303,7 +1722,7 @@ const HERO_CONTENT = {
     ],
     job2Title: '<strong>Chef de projet digital</strong> — Groupe Meunier',
     job2Date: '2017 — 2021',
-    job2City: 'Paris, France',
+    job2City: 'Montréal, QC',
     job2Bullets: [
       'Coordonné 23 projets digitaux pour un budget d’investissement annuel cumulé de 1,4 M€.',
       'Conçu un tableau de suivi partagé et automatisé réduisant les délais de validation interne de 40 %.'
@@ -1320,9 +1739,9 @@ const HERO_CONTENT = {
   },
   en: {
     windowTitle: 'Live preview — A4 format',
-    name: 'Jordan Avery',
-    role: 'Operations Manager',
-    contact: '<span>jordan.avery@example.com</span> · <span>+1 604 555 0148</span> · <span>Vancouver, BC</span> · <span>linkedin.com/in/jordanavery</span>',
+    name: 'Jordan Roy',
+    role: 'Digital Project Manager',
+    contact: '<span>jordan.roy@email.com</span> · <span>+1 514 555-0123</span> · <span>Montréal, QC</span> · <span>linkedin.com/in/jordanroy</span>',
     secProfile: 'PROFILE',
     profileText: 'Operations manager with nine years in logistics and light manufacturing. Specialised in transforming complex firefighting into repeatable, scalable workflows while consistently reducing operating expenses and boosting team retention.',
     secExp: 'PROFESSIONAL EXPERIENCE',
@@ -1665,14 +2084,20 @@ window.addEventListener('load', updateHeroResumeScale);
  * localement), on le remercie et on lance automatiquement le téléchargement PDF.
  */
 if (urlParams.get('paid') === 'true') {
+  const directToBuilder = urlParams.get('start') === 'builder';
   history.replaceState({}, '', window.location.pathname);
-  showBuilder(data.template);
-  setTimeout(() => {
-    showToast(currentLanguage === 'en'
-      ? '✓ Payment confirmed — lifetime access unlocked. Good luck with your job search!'
-      : '✓ Paiement confirmé — accès à vie débloqué. Bonne recherche d’emploi !');
-  }, 400);
-  setTimeout(() => { if (userHasPaid) exportPDF(); }, 2200);
+  if (directToBuilder) {
+    // Lien du courriel de bienvenue : on va directement à l'espace d'édition.
+    showBuilder(data.template);
+    setTimeout(() => {
+      showToast(currentLanguage === 'en'
+        ? '✓ Lifetime access active — welcome back!'
+        : '✓ Accès à vie actif — bon retour !');
+    }, 400);
+  } else {
+    // Retour Stripe après paiement : page de confirmation animée, bilingue.
+    openPaymentSuccess();
+  }
 }
 
 
