@@ -6,6 +6,7 @@
   "description": "CVavie.com — créateur de CV bilingue FR/EN, compatible ATS, paiement unique à vie.",
   "dependencies": {
     "@sparticuz/chromium": "^127.0.0",
+    "@vercel/analytics": "^2.0.1",
     "puppeteer-core": "^22.15.0"
   }
 }
